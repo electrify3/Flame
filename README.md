@@ -6,7 +6,7 @@ It is user friendly and supports `hybrid commands`.
 Default prefix is `??` or you can ping `@Flame#3901` to get your server prefix
 Use `/help` to get command list.
 
-[Invite Flame](https://discord.com/api/oauth2/authorize?client_id=1122413326174003290&permissions=8&scope=bot%20applications.commands)
+[Invite Flame](https://discord.com/api/oauth2/authorize?client_id=1122413326174003290&permissions=1513962695871&scope=bot%20applications.commands)
 
 
 # Terms of Service
@@ -80,6 +80,6 @@ By using the Flame Discord Bot, you acknowledge that you have read, understood, 
 # Important Links
 [Support server](https://discord.gg/gsug3senpe)
 
-[Flame](https://discord.com/api/oauth2/authorize?client_id=1122413326174003290&permissions=8&scope=bot%20applications.commands)
+[Flame](https://discord.com/api/oauth2/authorize?client_id=1122413326174003290&permissions=1513962695871&scope=bot%20applications.commands)
 
 [Riya Bot](https://discord.com/oauth2/authorize?client_id=986350052379340880&scope=bot%20applications.commands&permissions=2146958847)
