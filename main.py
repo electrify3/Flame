@@ -2,7 +2,6 @@ import os
 import discord
 from utils import config, tools
 from discord.ext import commands
-from extras.webpage import StartPage
 
 token = config.token
 cogs = ["cogs.commands.admin", "cogs.commands.configs", "cogs.commands.fun", "cogs.commands.help", "cogs.commands.logging", "cogs.commands.misc", "cogs.commands.music", "cogs.commands.moderation", "cogs.commands.points", "cogs.commands.roles", "cogs.commands.tools", "cogs.commands.voice", "cogs.events.handler", "cogs.events.logger"]
@@ -37,6 +36,5 @@ class Flame(commands.Bot):
 		print(f"Logged in as: {self.user}")
 
 client = Flame()
-StartPage(), client.run(token)
 try: client.run(token)
 except: os.system("python extras/restart.py")
