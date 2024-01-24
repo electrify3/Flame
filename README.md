@@ -4,11 +4,11 @@ Introducing Flame, a versatile Discord bot that brings multiple moderation and a
 
 ## Default Prefix and Customization
 
-By default, Flame's command prefix is `??`, allowing users to easily trigger its features. However, if you prefer a different prefix or even `no prefix` at all, Flame offers the flexibility to customize it to suit your server's needs.
+By default, Flame's command prefix is `?`, allowing users to easily trigger its features. However, if you prefer a different prefix or even `no prefix` at all, Flame offers the flexibility to customize it to suit your server's needs.
 
 ## Powerful Features
 
-Flame excels at making complex tasks simple. Take, for instance, the role management feature. Adding a role to multiple members simultaneously is effortless with Flame. By using the command `??role @user1/id @user2/id... role name/id`, you can assign roles to several members at once. Flame takes care of case sensitivity and font variations, ensuring a seamless role assignment process.
+Flame excels at making complex tasks simple. Take, for instance, the role management feature. Adding a role to multiple members simultaneously is effortless with Flame. By using the command `?role @user1/id @user2/id... role name/id`, you can assign roles to several members at once. Flame takes care of case sensitivity and font variations, ensuring a seamless role assignment process.
 
 Moderation commands are another highlight of Flame. Whether you need to kick, ban, or manage user permissions, Flame provides efficient moderation tools to keep your server in check. You can swiftly handle user actions with just a few commands, making moderation hassle-free.
 
