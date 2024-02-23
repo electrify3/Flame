@@ -28,4 +28,8 @@ Flame introduces a points system designed with tournaments in mind. With this sy
 - **Roles**: Handles role-related commands and operations.
 - **Configs**: Manages bot configuration settings.
 
-Flame is here to revolutionize your server management experience. With its user-friendly commands, efficient moderation tools, and fun extras, Flame brings a dynamic and engaging atmosphere to your Discord community. So, why wait? Invite Flame to your server today and unlock the power of versatile moderation and interactive features.
+# Getting Started
+## Set the following env variables first
+### `Token` = discord bot api key/token
+### `OpenAi` = openai key (leave this as none or empty string if not available)
+### `Tenor` = tenor api key (for gifs)
