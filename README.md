@@ -30,9 +30,9 @@ Flame introduces a points system designed with tournaments in mind. With this sy
 
 # Getting Started
 **Set the following env variables first**
-`Token` = discord bot api key/token
-`OpenAI` = openai key (leave this as none or empty string if not available)
-TenorKey` = tenor api key (for gifs)
+ `Token` = discord bot api key/token
+ `OpenAI` = openai key (leave this as none or empty string if not available)
+ `TenorKey` = tenor api key (for gifs)
 
 # Customisation
 **To customise bot apperance you need to go through `Flame/utils/config.py`
