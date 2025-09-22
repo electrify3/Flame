@@ -39,7 +39,7 @@ class Menu(Select):
     
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.ctx.author:
-            return await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
+            return await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
             
         await interaction.response.defer()
         
@@ -84,7 +84,7 @@ class Controller(View):
     
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
+            await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
             return False
         else:
             return True
@@ -165,11 +165,11 @@ class Controller(View):
 
 
 class Help(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Ebook:1127301294399426610>"
-        self.invite = discord.utils.oauth_url(self.client.user.id, permissions=discord.Permissions(permissions=1513962695871))
-        self.owner = self.client.application.owner
+        self.invite = discord.utils.oauth_url(self.bot.user.id, permissions=discord.Permissions(permissions=1513962695871))
+        self.owner = self.bot.application.owner
     
     
     def command_help(self, ctx, command):
@@ -189,28 +189,28 @@ class Help(commands.Cog):
     async def help(self, ctx, *, command_name = None):
         view = View()
         if command_name:
-            command = self.client.get_command(command_name.lower())
-            cog = self.client.get_cog(command_name.capitalize())
+            command = self.bot.get_command(command_name.lower())
+            cog = self.bot.get_cog(command_name.capitalize())
             if not command and not cog:
-                return await ctx.send(f"{self.client.fail} | No command/module called `{command_name}` found!", mention_author=False)
+                return await ctx.send(f"{self.bot.fail} | No command/module called `{command_name}` found!", mention_author=False)
             elif command:
                 em = self.command_help(ctx, command)
             elif cog:
                 em = Menu.cog_help(ctx, cog)
         
         else:
-            cogs = [cog for cog in self.client.cogs.values() if [command for command in cog.walk_commands()]]
+            cogs = [cog for cog in self.bot.cogs.values() if [command for command in cog.walk_commands()]]
             options = [discord.SelectOption(label="Home", emoji="<:Ehome:1127975367345442816>")] + [discord.SelectOption(label=cog.qualified_name, emoji=cog.emoji) for cog in cogs]
             view = Controller(ctx, options, cogs)
             em = Menu.default_help(ctx, cogs)
         
         view.add_item(Button(label="Invite Me", url=self.invite))
-        view.add_item(Button(label="Support server", url=self.client.server))
-        view.add_item(Button(label="Wiki", url=self.client.wiki))
+        view.add_item(Button(label="Support server", url=self.bot.server))
+        view.add_item(Button(label="Wiki", url=self.bot.wiki))
         
         message = await ctx.send(embed=em, view=view)
         if not command_name: view.message = message
 
 
-async def setup(client):
-    await client.add_cog(Help(client))
+async def setup(bot):
+    await bot.add_cog(Help(bot))

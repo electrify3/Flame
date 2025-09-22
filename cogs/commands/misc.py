@@ -9,8 +9,8 @@ from discord.ui import Button, View
 
 
 class Misc(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.uptime = datetime.datetime.utcnow()
         self.emoji = "<:Ediscover:1127305437549711372>"
         
@@ -18,7 +18,7 @@ class Misc(commands.Cog):
     @commands.hybrid_command(name= "ping",description="Shows bot latency.", usage="ping", aliases=["uptime"])
     @commands.guild_only()
     async def ping(self, ctx):
-        latency = round(self.client.latency * 1000)
+        latency = round(self.bot.latency * 1000)
         uptime = str(datetime.datetime.utcnow() - self.uptime).split(".")[0]
         em = discord.Embed(title=f"{ctx.me}", color=discord.Colour.dark_theme())
         em.add_field(name="<:Eping:1138002794197041223> Ping", value=f"{latency}ms", inline=False)
@@ -53,7 +53,7 @@ class Misc(commands.Cog):
     @commands.guild_only()
     async def av_server(self, ctx):
         if not ctx.guild.icon:
-            return await ctx.send(f"{self.client.fail} | This server don't have a icon set!")
+            return await ctx.send(f"{self.bot.fail} | This server don't have a icon set!")
         embed = discord.Embed(title=ctx.guild)
         embed.set_image(url = ctx.guild.icon.url)
         embed.set_footer(text=f'Requested by: {ctx.author.name}')
@@ -65,9 +65,9 @@ class Misc(commands.Cog):
     @app_commands.describe(user="Select a user.")
     async def banner(self, ctx, user: discord.User=commands.Author):
         await ctx.defer()
-        user = await self.client.fetch_user(user.id)
+        user = await self.bot.fetch_user(user.id)
         if not user.banner:
-            return await ctx.send(f"{self.client.warning} | No banner found!")
+            return await ctx.send(f"{self.bot.warning} | No banner found!")
         embed = discord.Embed(title = 'Banner')
         embed.set_author(name = user, icon_url = user.display_avatar.url)
         embed.set_image(url = user.banner.url)
@@ -80,9 +80,9 @@ class Misc(commands.Cog):
     @app_commands.describe(user="Select a user.")
     async def banner_user(self, ctx, user: discord.User=commands.Author):
         await ctx.defer()
-        user = await self.client.fetch_user(user.id)
+        user = await self.bot.fetch_user(user.id)
         if not user.banner:
-            return await ctx.send(f"{self.client.warning} | No banner found!")
+            return await ctx.send(f"{self.bot.warning} | No banner found!")
         embed = discord.Embed(title = 'Banner')
         embed.set_author(name = user, icon_url = user.display_avatar.url)
         embed.set_image(url = user.banner.url)
@@ -94,7 +94,7 @@ class Misc(commands.Cog):
     @commands.guild_only()
     async def banner_server(self, ctx):
         if not ctx.guild.banner:
-            return await ctx.send(f"{self.client.fail} | This server don't have a banner set!")
+            return await ctx.send(f"{self.bot.fail} | This server don't have a banner set!")
         embed = discord.Embed(title=ctx.guild)
         embed.set_image(url = ctx.guild.banner.url)
         embed.set_footer(text=f'Requested by: {ctx.author.name}')
@@ -105,7 +105,7 @@ class Misc(commands.Cog):
     @commands.guild_only()
     async def background(self, ctx):
         if not ctx.guild.splash:
-            return await ctx.send(f"{self.client.fail} | This server don't have a invite background set!")
+            return await ctx.send(f"{self.bot.fail} | This server don't have a invite background set!")
         embed = discord.Embed(title=ctx.guild)
         embed.set_image(url = ctx.guild.splash.url)
         embed.set_footer(text=f'Requested by: {ctx.author.name}')
@@ -116,7 +116,7 @@ class Misc(commands.Cog):
     @commands.guild_only()
     async def discovery(self, ctx):
         if not ctx.guild.discovery_splash:
-            return await ctx.send(f"{self.client.fail} | This server don't have a discovery background set!")
+            return await ctx.send(f"{self.bot.fail} | This server don't have a discovery background set!")
         embed = discord.Embed(title=ctx.guild)
         embed.set_image(url = ctx.guild.discovery_splash.url)
         embed.set_footer(text=f'Requested by: {ctx.author.name}')
@@ -148,10 +148,10 @@ class Misc(commands.Cog):
         await ctx.defer()
         members = ctx.guild.premium_subscribers
         if not members:
-            return await ctx.send(f"{self.client.warning} | No current server boosters found!")
+            return await ctx.send(f"{self.bot.warning} | No current server boosters found!")
         message = ", "
         message = message.join(f"`{member}`" for member in members[:30])
-        em = discord.Embed(title=ctx.guild, color=self.client.color)
+        em = discord.Embed(title=ctx.guild, color=self.bot.color)
         em.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else ctx.me.display_avatar.url)
         em.add_field(name="Context", value=f"Server level: {ctx.guild.premium_tier}\nTotal boosts: {ctx.guild.premium_subscription_count}\nTotal boosters: {len(members)}\nBooster role: {ctx.guild.premium_subscriber_role.mention if ctx.guild.premium_subscriber_role else None}", inline=False)
         em.add_field(name="Boosters", value=message, inline=False)
@@ -168,7 +168,7 @@ class Misc(commands.Cog):
         
         async for message in channel.history(limit=1, oldest_first=True): pass
         
-        em = discord.Embed(title=f"{channel.name}'s first message", description=message.content or "[No text found in the message]", color=self.client.color)
+        em = discord.Embed(title=f"{channel.name}'s first message", description=message.content or "[No text found in the message]", color=self.bot.color)
         em.add_field(name="Author", value=message.author.name, inline=False)
         em.set_thumbnail(url=message.author.display_avatar.url)
         em.set_footer(text=f'Requested by: {ctx.author}')
@@ -183,7 +183,7 @@ class Misc(commands.Cog):
     async def vanity(self, ctx):
         url = ctx.guild.vanity_url
         if url: await ctx.send(url)
-        else: await ctx.send(f"{self.client.warning} | No vanity url found for this server.")
+        else: await ctx.send(f"{self.bot.warning} | No vanity url found for this server.")
     
     
     
@@ -209,7 +209,7 @@ class Misc(commands.Cog):
         em.add_field(name="Roles", value = f"Total roles: {len(member.roles) - 1}\nTop role: {member.top_role.mention if member.top_role else None}\nTop hoisted role: {top_hoist_role.mention if top_hoist_role else None}", inline = False)
         em.add_field(name="Permissions", value=', '.join(permission.replace("_", " ").capitalize() for permission, value in permissions if value) or "None", inline=False)
         em.set_footer(text=f"ID: {member.id}")
-        member = await self.client.fetch_user(member.id)
+        member = await self.bot.fetch_user(member.id)
         if member.banner:
             em.set_image(url=member.banner.url)
         profile = Button(label="Profile", url=f"https://discordapp.com/users/{member.id}")
@@ -222,7 +222,7 @@ class Misc(commands.Cog):
     
     
     async def user_info(self, ctx, id: int):
-        member = await self.client.fetch_user(id)
+        member = await self.bot.fetch_user(id)
         em = discord.Embed(description=f"[Avatar]({member.display_avatar.url})", color = ctx.author.color, timestamp = datetime.datetime.now())
         em.set_author(name=member, icon_url = member.display_avatar.url)
         em.set_thumbnail(url = member.display_avatar.url)
@@ -262,7 +262,7 @@ class Misc(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         
         text = ", ".join(f"`{member}`" for member in role.members[:30]) or "None"
         
@@ -312,5 +312,5 @@ class Misc(commands.Cog):
         await ctx.send(embed=em)
     
     
-async def setup(client):
-    await client.add_cog(Misc(client))
+async def setup(bot):
+    await bot.add_cog(Misc(bot))

@@ -109,7 +109,7 @@ class Music(commands.Cog):
             bot.lavalink.add_node(host='localhost', port=8080, password='password',
                                   region='us', name='default-node')
 
-        self.lavalink: lavalink.Client = bot.lavalink
+        self.lavalink: lavalink.bot = bot.lavalink
         self.lavalink.add_event_hooks(self)
 
 
@@ -417,8 +417,6 @@ class Music(commands.Cog):
 
     
     
-
-
     @commands.hybrid_command(name='lowpass', description='Set lowpass filter', aliases=['lp'], usage='lowpass <strength>')
     @commands.guild_only()
     @commands.check(create_player)

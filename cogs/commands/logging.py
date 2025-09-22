@@ -4,11 +4,11 @@ import aiosqlite
 from discord.ext import commands
 
 class Logging(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Elogging:1141365823722754069>"
         self.path = "data/database/Logging.db"
-        asyncio.run_coroutine_threadsafe(self.create_table(), self.client.loop)
+        asyncio.run_coroutine_threadsafe(self.create_table(), self.bot.loop)
     
     async def create_table(self):
         async with aiosqlite.connect(self.path) as db:
@@ -32,7 +32,7 @@ class Logging(commands.Cog):
         async with aiosqlite.connect(self.path) as db:
             async with db.execute(f"""UPDATE Logging SET '{category}' = {channel.id} WHERE Guild = {ctx.guild.id}"""):
                 await db.commit()
-        await ctx.send(f"{self.client.success} | {category.capitalize()} log is now set to {channel.mention}.")
+        await ctx.send(f"{self.bot.success} | {category.capitalize()} log is now set to {channel.mention}.")
     
     
     @commands.Cog.listener("on_ready")
@@ -41,7 +41,7 @@ class Logging(commands.Cog):
             async with db.execute("""SELECT Guild FROM Logging""") as c:
                 data = await c.fetchall()
                 data = [x[0] for x in data]
-                for guild in self.client.guilds:
+                for guild in self.bot.guilds:
                     if guild.id not in data:
                         await db.execute("""INSERT INTO Logging(
                             Guild, Server, Moderation, Member, Message, Invite, 'Join', Leave, Role, Ban, Voice)
@@ -131,12 +131,12 @@ class Logging(commands.Cog):
             categories = valid
         invalid = [category for category in categories if category.capitalize() not in valid]
         if invalid:
-            return await ctx.send(f"{self.client.warning} | The following categories are not valid: {', '.join(invalid)}!")
+            return await ctx.send(f"{self.bot.warning} | The following categories are not valid: {', '.join(invalid)}!")
         async with aiosqlite.connect(self.path) as db:
             for category in categories:
                 async with db.execute(f"""UPDATE Logging SET '{category.capitalize()}' = 0 WHERE Guild = {ctx.guild.id}"""):
                     await db.commit()
-        await ctx.send(f"{self.client.success} | Disabled log categories: {', '.join(category.capitalize() for category in categories)}.")
+        await ctx.send(f"{self.bot.success} | Disabled log categories: {', '.join(category.capitalize() for category in categories)}.")
     
     @commands.hybrid_command(name="viewlogs", description="View current log settings.", usage="viewlogs")
     @commands.guild_only()
@@ -160,8 +160,8 @@ class Logging(commands.Cog):
         }
         
         if not [channelid for channelid in settings.values() if channelid]:
-            return await ctx.send(f"{self.client.warning} | There is no log channel set in this server!")
-        embed = discord.Embed(title="Log Settings", color=self.client.color)
+            return await ctx.send(f"{self.bot.warning} | There is no log channel set in this server!")
+        embed = discord.Embed(title="Log Settings", color=self.bot.color)
         embed.set_thumbnail(url=(ctx.guild.icon or ctx.me.display_avatar).url)
         for category, channelid in settings.items():
             if channelid:
@@ -170,5 +170,5 @@ class Logging(commands.Cog):
         await ctx.send(embed=embed)
     
     
-async def setup(client):
-    await client.add_cog(Logging(client))
+async def setup(bot):
+    await bot.add_cog(Logging(bot))

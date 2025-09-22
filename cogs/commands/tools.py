@@ -45,8 +45,8 @@ class Nuke(View):
         
 
 class Tools(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.sniped_messages = {}
         self.emoji = "<:Eutility:1127303124634325002>"
     
@@ -63,17 +63,17 @@ class Tools(commands.Cog):
     @app_commands.describe(channel="Channel where you want to send embed.", description="Content of your embed.", title="Title of your embed.")
     async def embed(self, ctx, channel: discord.TextChannel, *, title, description=None):
         await ctx.defer()
-        em = discord.Embed(title=title, description=description, color=self.client.color)
+        em = discord.Embed(title=title, description=description, color=self.bot.color)
         await channel.send(embed=em)
-        await ctx.send (f'{self.client.success} | embed was sent to **{channel.mention}**.')
+        await ctx.send (f'{self.bot.success} | embed was sent to **{channel.mention}**.')
     
     @commands.hybrid_command(name="snipe", description="Shows the latest deleted message of the channel", usage="snipe")
     @commands.guild_only()
     async def snipe(self, ctx):
         message = self.sniped_messages.get(str(ctx.channel.id))
         if not message:
-            return await ctx.send(f"{self.client.fail} | No recently deleted message found.")
-        em = discord.Embed(title="Deleted Message Snipe", description=message.content or "**[No text found in deleted message]**", timestamp=message.created_at, color=self.client.color)
+            return await ctx.send(f"{self.bot.fail} | No recently deleted message found.")
+        em = discord.Embed(title="Deleted Message Snipe", description=message.content or "**[No text found in deleted message]**", timestamp=message.created_at, color=self.bot.color)
         em.add_field(name="Author", value=message.author, inline=False)
         em.set_thumbnail(url=message.author.display_avatar.url)
         if message.attachments:
@@ -90,7 +90,7 @@ class Tools(commands.Cog):
     @app_commands.describe(channel="Channel who's name you want to change.")
     async def channelname(self, ctx, channel: typing.Optional[discord.TextChannel], *, name):
         if not channel: channel = ctx.channel
-        text = f"{self.client.success} | Successfully changed `{channel}` name to `{name}`."
+        text = f"{self.bot.success} | Successfully changed `{channel}` name to `{name}`."
         await channel.edit(name=name, reason=f"{ctx.author} used channelname.")
         await ctx.send(text)
     
@@ -100,7 +100,7 @@ class Tools(commands.Cog):
     @commands.guild_only()
     async def nuke(self, ctx):
         view = Nuke(ctx)
-        view.message = await ctx.send(f"{self.client.warning} | {ctx.author.mention} are you sure you want to nuke {ctx.channel.mention}.", view=view)
+        view.message = await ctx.send(f"{self.bot.warning} | {ctx.author.mention} are you sure you want to nuke {ctx.channel.mention}.", view=view)
     
     
     @commands.hybrid_command(name="slowmode", description="Set slowmode for current channel.", usage="slowmode <time/off>")
@@ -111,7 +111,7 @@ class Tools(commands.Cog):
         await ctx.defer()
         if duration.lower() in ["0", "off", "disable", "none"]:
             await ctx.channel.edit(slowmode_delay=0)
-            em = discord.Embed(title="Success", description="I turned off slowmode.", color=self.client.color)
+            em = discord.Embed(title="Success", description="I turned off slowmode.", color=self.bot.color)
             em.add_field(name="Channel", value=ctx.channel.mention, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
             await ctx.send(embed=em)
@@ -130,7 +130,7 @@ class Tools(commands.Cog):
             return
         
         await ctx.channel.edit(slowmode_delay=duration.total_seconds(), reason=f"{ctx.author} used slowmode.")
-        em = discord.Embed(title="Success", description="I turned on slowmode.", color=self.client.color)
+        em = discord.Embed(title="Success", description="I turned on slowmode.", color=self.bot.color)
         em.add_field(name="Channel", value=ctx.channel.mention, inline = False)
         em.add_field(name="Duration", value=duration, inline = False)
         em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
@@ -147,7 +147,7 @@ class Tools(commands.Cog):
             name = role
             role = tools.find_role(ctx, role)
             if not role:
-                return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+                return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             overwrite = channel.overwrites_for(role)
             if overwrite.send_messages is False:
                 em = discord.Embed(title="Failed", description=f"{channel.mention} is already locked for {role.mention}.", color = discord.Colour.red())
@@ -156,7 +156,7 @@ class Tools(commands.Cog):
             overwrite.send_messages = False
             await channel.set_permissions(role, overwrite = overwrite, reason=f"{ctx.author} used lockdown.")
         
-            em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention} for {role.mention}.", color = self.client.color)
+            em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention} for {role.mention}.", color = self.bot.color)
             return await ctx.send(embed=em)
         overwrite = channel.overwrites_for(ctx.guild.default_role)
         
@@ -167,7 +167,7 @@ class Tools(commands.Cog):
         overwrite.send_messages = False
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used lockdown.")
         
-        em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -180,7 +180,7 @@ class Tools(commands.Cog):
         if role:
             name = role
             role = tools.find_role(ctx, role)
-            if not role: return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            if not role: return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             overwrite = channel.overwrites_for(role)
             if overwrite.send_messages is not False:
                 em = discord.Embed(title="Failed", description=f"{channel.mention} is already unlocked for {role.mention}.", color = discord.Colour.red())
@@ -188,7 +188,7 @@ class Tools(commands.Cog):
             overwrite.send_messages = None
             await channel.set_permissions(role, overwrite = overwrite, reason=f"{ctx.author} used unlock.")
             
-            em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention} for {role.mention}.", color = self.client.color)
+            em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention} for {role.mention}.", color = self.bot.color)
             return await ctx.send(embed=em)
         
         overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -200,7 +200,7 @@ class Tools(commands.Cog):
         overwrite.send_messages = None
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used unlock.")
         
-        em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     @commands.hybrid_command(name="hide", description="Hides a channel.", usage="hide [channel/id] [role]")
@@ -212,14 +212,14 @@ class Tools(commands.Cog):
         if role:
             name = role
             role = tools.find_role(ctx, role)
-            if not role: return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            if not role: return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             overwrite = channel.overwrites_for(role)
             if overwrite.view_channel is False:
                 em = discord.Embed(title="Failed", description=f"{channel.mention} is already hidden for {role.mention}.", color = discord.Colour.red())
                 return await ctx.send(embed=em)
             overwrite.view_channel = False
             await channel.set_permissions(role, overwrite = overwrite, reason=f"{ctx.author} used hide.")
-            em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention} for {role.mention}.", color = self.client.color)
+            em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention} for {role.mention}.", color = self.bot.color)
             return await ctx.send(embed=em)
         overwrite = channel.overwrites_for(ctx.guild.default_role)
         
@@ -230,7 +230,7 @@ class Tools(commands.Cog):
         overwrite.view_channel = False
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used hide.")
         
-        em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     @commands.hybrid_command(name="unhide", description="Unhides a channel.", usage="unhide [channel/id] [role]")
@@ -242,7 +242,7 @@ class Tools(commands.Cog):
         if role:
             name = role
             role = tools.find_role(ctx, role)
-            if not role: return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            if not role: return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             overwrite = channel.overwrites_for(role)
             if overwrite.view_channel is not False:
                 em = discord.Embed(title="Failed", description=f"{channel.mention} is not hidden for {role.mention}.", color = discord.Colour.red())
@@ -251,7 +251,7 @@ class Tools(commands.Cog):
             overwrite.view_channel = None
             await channel.set_permissions(role, overwrite = overwrite, reason=f"{ctx.author} used unhide.")
             
-            em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention} for {role.mention}.", color = self.client.color)
+            em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention} for {role.mention}.", color = self.bot.color)
             return await ctx.send(embed=em)
         
         overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -263,7 +263,7 @@ class Tools(commands.Cog):
         overwrite.view_channel = None
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used unhide.")
         
-        em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -277,9 +277,9 @@ class Tools(commands.Cog):
         for member in members:
             try:
                 await member.edit(nick=name, reason=f"{ctx.author} used nickname.")
-                await ctx.send(f"{self.client.success} | Successfully changed `{member}`'s nickname to `{name}`.")
+                await ctx.send(f"{self.bot.success} | Successfully changed `{member}`'s nickname to `{name}`.")
             except :
-                await ctx.send(f"{self.client.fail} | I am unable to change `{member}`'s nickname.")
+                await ctx.send(f"{self.bot.fail} | I am unable to change `{member}`'s nickname.")
     
     
     
@@ -300,24 +300,24 @@ class Tools(commands.Cog):
                 input = urls + emotes
         input = [*set(input)]
         if not input:
-            await ctx.send(f"{self.client.fail} | Failed, no `emoji/link` was found.")
+            await ctx.send(f"{self.bot.fail} | Failed, no `emoji/link` was found.")
             return
         for element in input:
             if isinstance(element, discord.PartialEmoji):
-                element._state = self.client._connection
+                element._state = self.bot._connection
                 image = await element.read()
                 try:
                     emoji = await ctx.guild.create_custom_emoji(name=element.name, image=image, reason=f"{ctx.author} used steal command.")
-                    await ctx.send(f"{self.client.success} | Successfully added a emoji {emoji}.")
-                except: await ctx.send(f"{self.client.fail} | Failed, You may check asset size or server emoji slots.")
+                    await ctx.send(f"{self.bot.success} | Successfully added a emoji {emoji}.")
+                except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size or server emoji slots.")
                     
             elif str(element).startswith("https://"):
                 name = f"emoji_{len(ctx.guild.emojis)+1}"
                 image = requests.get(element).content
                 try:
                     emoji = await ctx.guild.create_custom_emoji(name=name, image=image, reason=f"{ctx.author} used steal command.")
-                    await ctx.send(f"{self.client.success} | Successfully added a emoji {emoji}.")
-                except: await ctx.send(f"{self.client.fail} | Failed, You may check asset size or server emoji slots.")
+                    await ctx.send(f"{self.bot.success} | Successfully added a emoji {emoji}.")
+                except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size or server emoji slots.")
     
     
     @commands.hybrid_command(name="sticker", description="Adds a sticker from a url, emoji or a sticker.", aliases=["ss", "steals", "stealsticker"], usage="sticker <input>")
@@ -337,7 +337,7 @@ class Tools(commands.Cog):
                 if not (urls + emotes): input = None
                 else: input = (urls + emotes)[0]
         if not input:
-            await ctx.send(f"{self.client.fail} | Failed, no `emoji/link/sticker` was found.")
+            await ctx.send(f"{self.bot.fail} | Failed, no `emoji/link/sticker` was found.")
             return
         
         if str(input).strip("<>").startswith("https://"):
@@ -346,23 +346,23 @@ class Tools(commands.Cog):
             file = discord.File(fp=image)
             try:
                 sticker = await ctx.guild.create_sticker(name=name, file=file, emoji="🤖", description=f"Added by {ctx.author}.", reason=f"{ctx.author} used sticker command.")
-                await ctx.send(f"{self.client.success} | Successfully added a sticker.", stickers=[sticker])
-            except: await ctx.send(f"{self.client.fail} | Failed, You may check asset size/type or server sticker slots.")
+                await ctx.send(f"{self.bot.success} | Successfully added a sticker.", stickers=[sticker])
+            except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size/type or server sticker slots.")
         elif isinstance(input, discord.PartialEmoji):
-            input._state = self.client._connection
+            input._state = self.bot._connection
             file = await input.to_file()
             try:
                 sticker = await ctx.guild.create_sticker(name=input.name, file=file, description=f"Added by {ctx.author}.", emoji="🤖", reason=f"{ctx.author} used sticker command.")
-                await ctx.send(f"{self.client.success} | Successfully added a sticker.", stickers=[sticker])
-            except: await ctx.send(f"{self.client.fail} | Failed, You may check asset size/type or server sticker slots.")
+                await ctx.send(f"{self.bot.success} | Successfully added a sticker.", stickers=[sticker])
+            except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size/type or server sticker slots.")
         elif isinstance(input, discord.StickerItem):
             data = await input.fetch()
             image = io.BytesIO(requests.get(input.url).content)
             file = discord.File(fp=image)
             try:
                 sticker = await ctx.guild.create_sticker(name=data.name, file=file, description=data.description, emoji=data.emoji, reason=f"{ctx.author} used sticker command.")
-                await ctx.send(f"{self.client.success} | Successfully added a sticker.", stickers=[sticker])
-            except: await ctx.send(f"{self.client.fail} | Failed, You may check asset size/type or server sticker slots.")
+                await ctx.send(f"{self.bot.success} | Successfully added a sticker.", stickers=[sticker])
+            except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size/type or server sticker slots.")
     
     
     @commands.hybrid_command(name="afk", description="Set afk for you.", usage="afk [message]")
@@ -375,5 +375,5 @@ class Tools(commands.Cog):
         await ctx.send(f"**{ctx.author.mention}, Alright I'll manage it, Enjoy yourself {ctx.author}.**", delete_after=3)
     
 
-async def setup(client):
-    await client.add_cog(Tools(client))
+async def setup(bot):
+    await bot.add_cog(Tools(bot))

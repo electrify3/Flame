@@ -4,8 +4,8 @@ from discord import app_commands
 from discord.ext import commands
 
 class Voice(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Evoice:1127301699506274425>"
     
     @commands.hybrid_group(name="voice", description="This is the base command of all other voice commands.", usage="voice <command>", aliases=["v"])
@@ -28,7 +28,7 @@ class Voice(commands.Cog):
         overwrite.send_messages = False
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used voice lock command.")
         
-        em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully locked {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -45,7 +45,7 @@ class Voice(commands.Cog):
         overwrite.connect = None
         overwrite.send_messages = None
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used voice lock command.")
-        em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully unlocked {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -63,7 +63,7 @@ class Voice(commands.Cog):
         overwrite.view_channel = False
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used voice hide command.")
         
-        em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully hided {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -79,7 +79,7 @@ class Voice(commands.Cog):
             return
         overwrite.view_channel = None
         await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite, reason=f"{ctx.author} used voice unhide command.")
-        em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention}.", color = self.client.color)
+        em = discord.Embed(title="Success", description=f"I successfully unhided {channel.mention}.", color = self.bot.color)
         await ctx.send(embed=em)
     
     
@@ -90,14 +90,14 @@ class Voice(commands.Cog):
     async def kick(self, ctx, members: commands.Greedy[discord.Member]):
         await ctx.defer()
         if not members:
-            await ctx.send(f"{self.client.warning} | Provide atleast one @member/id.")
+            await ctx.send(f"{self.bot.warning} | Provide atleast one @member/id.")
             return
         for member in members:
             if not member.voice:
-                await ctx.send(f"{self.client.fail} | `{member}` not in voice channel.")
+                await ctx.send(f"{self.bot.fail} | `{member}` not in voice channel.")
                 continue
             await member.move_to(None, reason=f"{member}: Used voice kick command.")
-            await ctx.send(f"{self.client.success} | Successfully voice kicked `{member}`.")
+            await ctx.send(f"{self.bot.success} | Successfully voice kicked `{member}`.")
     
     
     @voice.command(name="mute", description="Voice mutes a member.", usage="voice mute <@members/ids>")
@@ -106,17 +106,17 @@ class Voice(commands.Cog):
     async def mute(self, ctx, members: commands.Greedy[discord.Member]):
         await ctx.defer()
         if not members:
-            await ctx.send(f"{self.client.warning} | Provide atleast one @member/id.")
+            await ctx.send(f"{self.bot.warning} | Provide atleast one @member/id.")
             return
         for member in members:
             if not member.voice:
-                await ctx.send(f"{self.client.fail} | `{member}` not in voice channel.")
+                await ctx.send(f"{self.bot.fail} | `{member}` not in voice channel.")
                 continue
             if member.voice.mute:
-                await ctx.send(f"{self.client.fail} | `{member}` is already voice muted.")
+                await ctx.send(f"{self.bot.fail} | `{member}` is already voice muted.")
                 continue
             await member.edit(mute=True, reason=f"{member}: Used voice mute command.")
-            await ctx.send(f"{self.client.success} | Successfully voice muted `{member}`.")
+            await ctx.send(f"{self.bot.success} | Successfully voice muted `{member}`.")
     
     
     
@@ -126,17 +126,17 @@ class Voice(commands.Cog):
     async def voiceunmute(self, ctx, members: commands.Greedy[discord.Member]):
         await ctx.defer()
         if not members:
-            await ctx.send(f"{self.client.warning} | Provide atleast one @member/id.")
+            await ctx.send(f"{self.bot.warning} | Provide atleast one @member/id.")
             return
         for member in members:
             if not member.voice:
-                await ctx.send(f"{self.client.fail} | `{member}` not in voice channel.")
+                await ctx.send(f"{self.bot.fail} | `{member}` not in voice channel.")
                 continue
             if not member.voice.mute:
-                await ctx.send(f"{self.client.fail} | `{member}` is not voice muted.")
+                await ctx.send(f"{self.bot.fail} | `{member}` is not voice muted.")
                 continue
             await member.edit(mute=False, reason=f"{member}: Used voice unmute command.")
-            await ctx.send(f"{self.client.success} | Successfully voice unmuted `{member}`.")
+            await ctx.send(f"{self.bot.success} | Successfully voice unmuted `{member}`.")
     
     
     
@@ -146,17 +146,17 @@ class Voice(commands.Cog):
     async def deafen(self, ctx, members: commands.Greedy[discord.Member]):
         await ctx.defer()
         if not members:
-            await ctx.send(f"{self.client.warning} | Provide atleast one @member/id.")
+            await ctx.send(f"{self.bot.warning} | Provide atleast one @member/id.")
             return
         for member in members:
             if not member.voice:
-                await ctx.send(f"{self.client.fail} | `{member}` not in voice channel.")
+                await ctx.send(f"{self.bot.fail} | `{member}` not in voice channel.")
                 continue
             if member.voice.deaf:
-                await ctx.send(f"{self.client.fail} | `{member}` is already voice deafened.")
+                await ctx.send(f"{self.bot.fail} | `{member}` is already voice deafened.")
                 continue
             await member.edit(deafen=True, reason=f"{member}: Used voice deafen command.")
-            await ctx.send(f"{self.client.success} | Successfully voice deafened `{member}`.")
+            await ctx.send(f"{self.bot.success} | Successfully voice deafened `{member}`.")
     
     
     @voice.command(name="undeafen", description="Undeafen a member.", aliases=['undeaf'], usage="voice undeafen <@members/ids>")
@@ -165,17 +165,17 @@ class Voice(commands.Cog):
     async def undeafen(self, ctx, members: commands.Greedy[discord.Member]):
         await ctx.defer()
         if not members:
-            await ctx.send(f"{self.client.warning} | Provide atleast one @member/id.")
+            await ctx.send(f"{self.bot.warning} | Provide atleast one @member/id.")
             return
         for member in members:
             if not member.voice:
-                await ctx.send(f"{self.client.fail} | `{member}` not in voice channel.")
+                await ctx.send(f"{self.bot.fail} | `{member}` not in voice channel.")
                 continue
             if not member.voice.deaf:
-                await ctx.send(f"{self.client.fail} | `{member}` is not voice undeafened.")
+                await ctx.send(f"{self.bot.fail} | `{member}` is not voice undeafened.")
                 continue
             await member.edit(deafen=False, reason=f"{member}: Used voice undeaf command.")
-            await ctx.send(f"{self.client.success} | Successfully voice undeafened `{member}`.")
+            await ctx.send(f"{self.bot.success} | Successfully voice undeafened `{member}`.")
     
     
     @voice.command(name="move", description="Move all the members of users current vc to another selected vc.", usage="voice move <channel/id>")
@@ -190,11 +190,11 @@ class Voice(commands.Cog):
             em = discord.Embed(title="Failed", description=f"You are already in the same channel.", color = discord.Colour.red())
             await ctx.send(embed=em)
             return
-        msg = await ctx.send(f"{self.client.working} Moving all the connect users to `{channel}`, please be patient.")
+        msg = await ctx.send(f"{self.bot.working} Moving all the connect users to `{channel}`, please be patient.")
         for member in ctx.author.voice.channel.members:
             await member.move_to(channel, reason=f"{ctx.author} used voice move command.")
-        await msg.edit(content=f"{self.client.success} | Successfully voice moved all connected users.")
+        await msg.edit(content=f"{self.bot.success} | Successfully voice moved all connected users.")
     
     
-async def setup(client):
-    await client.add_cog(Voice(client))
+async def setup(bot):
+    await bot.add_cog(Voice(bot))

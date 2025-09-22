@@ -105,8 +105,8 @@ class Reset(View):
 
 
 class Points(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Elist:1127305243978371245>"
         self.path = "data/database/Points.db"
     
@@ -159,7 +159,7 @@ class Points(commands.Cog):
     async def create_table(self):
         db = sqlite3.connect(self.path)
         c = db.cursor()
-        for guild in self.client.guilds:
+        for guild in self.bot.guilds:
             c.execute(f"""CREATE TABLE IF NOT EXISTS '{guild.id} Points'(
             id integer,
             points integer
@@ -189,7 +189,7 @@ class Points(commands.Cog):
         self.setup_user(ctx.guild.id, user.id)
         data = self.get_data(ctx.guild.id, user.id)[1]
         rank = self.get_rank(ctx.guild.id, user.id)
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{user}'s points")
         em.set_thumbnail(url=user.display_avatar.url)
         em.add_field(name="Points", value=data, inline=False)
@@ -205,7 +205,7 @@ class Points(commands.Cog):
         self.setup_user(ctx.guild.id, user.id)
         data = self.get_data(ctx.guild.id, user.id)[1]
         rank = self.get_rank(ctx.guild.id, user.id)
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{user}'s points")
         em.set_thumbnail(url=user.display_avatar.url)
         em.add_field(name="Points", value=data, inline=False)
@@ -219,9 +219,9 @@ class Points(commands.Cog):
     @app_commands.describe(user="Select a user.", value="Points")
     async def log(self, ctx, user: discord.User, value: int=1):
         if user.bot:
-            return await ctx.reply(f"{self.client.warning} | You can't log against a bot.")
+            return await ctx.reply(f"{self.bot.warning} | You can't log against a bot.")
         elif user == ctx.author:
-            return await ctx.reply(f"{self.client.warning} | You can't log against yourself.")
+            return await ctx.reply(f"{self.bot.warning} | You can't log against yourself.")
             
         self.setup_user(ctx.guild.id, ctx.author.id)
         self.setup_user(ctx.guild.id, user.id)
@@ -242,7 +242,7 @@ class Points(commands.Cog):
         c.execute(f"""UPDATE '{ctx.guild.id} Points' SET points = 0 WHERE points < 0""")
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Successfully updated `{user}` points to **{value}**.")
+        await ctx.send(f"{self.bot.success} | Successfully updated `{user}` points to **{value}**.")
     
     
     @points.command(name="add", description="Add points to the user.", usage="points add <user/id> <value>")
@@ -257,7 +257,7 @@ class Points(commands.Cog):
         c.execute(f"""UPDATE '{ctx.guild.id} Points' SET points = 0 WHERE points < 0""")
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Successfully added **{value}** points to `{user}`.")
+        await ctx.send(f"{self.bot.success} | Successfully added **{value}** points to `{user}`.")
     
     
     @points.command(name="remove", description="Remove points from the user.", usage="points remove <user/id> <value>")
@@ -272,7 +272,7 @@ class Points(commands.Cog):
         c.execute(f"""UPDATE '{ctx.guild.id} Points' SET points = 0 WHERE points < 0""")
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Successfully removed **{value}** points from `{user}`.")
+        await ctx.send(f"{self.bot.success} | Successfully removed **{value}** points from `{user}`.")
     
     
     
@@ -292,7 +292,7 @@ class Points(commands.Cog):
             max_pages += 1
         
         if page < 0 or page > max_pages or not data:
-            return await ctx.send(f"{self.client.fail} | Page **{page}** not found.")
+            return await ctx.send(f"{self.bot.fail} | Page **{page}** not found.")
         
         
         entries = []
@@ -320,17 +320,17 @@ class Points(commands.Cog):
         c.execute(f"""UPDATE '{ctx.guild.id} Points' SET points = {0} WHERE id = {user.id}""")
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Successfully cleared all points of `{user}`.")
+        await ctx.send(f"{self.bot.success} | Successfully cleared all points of `{user}`.")
     
     
     @points.command(name="reset", description="Reset the server leaderboards.", usage="points reset")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def reset(self, ctx):
-        em = discord.Embed(title="Are you sure?", description="This action is completely irreversible, click on reset to continue.", color=self.client.color)
+        em = discord.Embed(title="Are you sure?", description="This action is completely irreversible, click on reset to continue.", color=self.bot.color)
         view = Reset(ctx, self.path)
         view.message = await ctx.send(embed=em, view=view)
     
     
-async def setup(client):
-    await client.add_cog(Points(client))
+async def setup(bot):
+    await bot.add_cog(Points(bot))

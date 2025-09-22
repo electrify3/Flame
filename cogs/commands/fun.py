@@ -5,7 +5,7 @@ import discord
 import sqlite3
 import datetime
 
-from utils import tools
+from utils import tools, config
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Button
@@ -26,7 +26,7 @@ class TruthDare(View):
     
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user != self.user:
-            await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
+            await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
             return False
         else:
             return True
@@ -81,8 +81,8 @@ class TruthDare(View):
 
 
 class Fun(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Egame:1127303566768488508>"
     
     @commands.hybrid_command(name="roll", description="Rolls a dice.", aliases=["dice"], usage="roll [limit]")
@@ -105,7 +105,7 @@ class Fun(commands.Cog):
     async def kiss(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime kiss")
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} kissed {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -116,7 +116,7 @@ class Fun(commands.Cog):
     async def cuddle(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime hug")
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} cuddled {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -127,7 +127,7 @@ class Fun(commands.Cog):
     async def slap(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime slap")
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} slapped {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -138,7 +138,7 @@ class Fun(commands.Cog):
     async def kill(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime wasted", 20)
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} killed {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -149,7 +149,7 @@ class Fun(commands.Cog):
     async def bully(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime bully")
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} bullied {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -160,7 +160,7 @@ class Fun(commands.Cog):
     async def bite(self, ctx, user: discord.Member):
         await ctx.defer()
         gif = await tools.get_gif("anime bite", 20)
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_author(name=f"{ctx.author.name} bitten {user.name}", icon_url=ctx.author.display_avatar.url)
         em.set_image(url=gif)
         await ctx.send(f"{user.mention}",embed=em)
@@ -170,7 +170,7 @@ class Fun(commands.Cog):
     async def thanos(self, ctx):
         await ctx.defer()
         gif = await tools.get_gif("thanos quote", 20)
-        em = discord.Embed(color=self.client.color)
+        em = discord.Embed(color=self.bot.color)
         em.set_image(url=gif)
         await ctx.send(f"{ctx.author.mention}",embed=em)
     
@@ -179,7 +179,7 @@ class Fun(commands.Cog):
     @commands.guild_only()
     @app_commands.describe(emoji="Emoji you want to enlarge.")
     async def enlarge(self, ctx, emoji: discord.PartialEmoji):
-        em = discord.Embed(title="Enlarged emoji", color=self.client.color)
+        em = discord.Embed(title="Enlarged emoji", color=self.bot.color)
         em.set_image(url=emoji.url)
         em.set_footer(text=f"Request by {ctx.author}.")
         await ctx.send(embed=em)
@@ -196,14 +196,14 @@ class Fun(commands.Cog):
         ai = c.fetchone()[0]
         db.close()
         if not ai:
-            await ctx.send(f"{self.client.warning} Your server doesn't support this command!")
+            await ctx.send(f"{self.bot.warning} Your server doesn't support this command!")
             return
         
-        message = await ctx.send(f"{self.client.working} | Please be patient, generating your image!")
+        message = await ctx.send(f"{self.bot.working} | Please be patient, generating your image!")
         
         em = discord.Embed(title=prompt, color=discord.Colour.dark_theme())
         em.set_author(name=ctx.me, icon_url=ctx.me.display_avatar.url)
-        openai.api_key = tools.ai_key
+        openai.api_key = config.openai
         response = openai.Image.create(
             prompt = prompt,
             n=1,
@@ -248,5 +248,5 @@ class Fun(commands.Cog):
         view.message = await ctx.send(embed=em, view=view)
 
 
-async def setup(client):
-    await client.add_cog(Fun(client))
+async def setup(bot):
+    await bot.add_cog(Fun(bot))

@@ -41,5 +41,5 @@ class Flame(commands.Bot):
     async def on_ready(self):
         print(f"Logged in as: {self.user}")
 
-client = Flame()
-client.run(token)
+bot = Flame()
+bot.run(token)

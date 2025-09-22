@@ -4,8 +4,8 @@ from discord.ext import commands
 
 
 class Configs(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.path = "data/database/Configs.db"
         self.emoji = "<:Ecog:1127303860227154000>"
         db = sqlite3.connect(self.path)
@@ -29,7 +29,7 @@ class Configs(commands.Cog):
         c.execute(f"""SELECT Guild FROM Configs""")
         data = c.fetchall()
         data = [x[0] for x in data]
-        for guild in self.client.guilds:
+        for guild in self.bot.guilds:
             if not guild.id in data:
                 c.execute(f"""INSERT INTO Configs(
                 Guild, Prefix, 'No prefix', Premium, Voice, LoopSong, LoopPlaylist)
@@ -65,7 +65,7 @@ class Configs(commands.Cog):
         c.execute(f"""UPDATE Configs SET Prefix = ?, 'No prefix' = ? WHERE Guild = {ctx.guild.id}""", (str(prefix), 0))
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Prefix was changed to `{prefix}`.")
+        await ctx.send(f"{self.bot.success} | Prefix was changed to `{prefix}`.")
     
     @prefix.command(name="off", description="Sets no prefix for your server.", usage="prefix off")
     @commands.has_permissions(manage_guild=True)
@@ -75,8 +75,8 @@ class Configs(commands.Cog):
         c.execute(f"""UPDATE Configs SET 'No prefix' = 1 WHERE Guild = {ctx.guild.id}""")
         db.commit()
         db.close()
-        await ctx.send(f"{self.client.success} | Successfully enabled no prefix for the guild `{ctx.guild.id}`.")
+        await ctx.send(f"{self.bot.success} | Successfully enabled no prefix for the guild `{ctx.guild.id}`.")
     
     
-async def setup(client):
-    await client.add_cog(Configs(client))
+async def setup(bot):
+    await bot.add_cog(Configs(bot))

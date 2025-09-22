@@ -6,8 +6,8 @@ import chat_exporter
 from discord.ext import commands
 
 class Logger(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.invites = {}
         self.path = "data/database/Logging.db"
     
@@ -26,14 +26,14 @@ class Logger(commands.Cog):
     async def send_log(self, category, guild, embed):
         data = await self.fetch_data(category, guild)
         if data:
-            logchannel = self.client.get_channel(data[0])
+            logchannel = self.bot.get_channel(data[0])
             if logchannel:
                 await logchannel.send(embed=embed)
     
     
     @commands.Cog.listener("on_ready")
     async def setup_bot(self):
-        for guild in self.client.guilds:
+        for guild in self.bot.guilds:
             if not guild.me.guild_permissions.manage_guild:
                 continue
             self.invites[str(guild.id)] = {}
@@ -62,7 +62,7 @@ class Logger(commands.Cog):
         async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_create, limit=1):
             if entry.target.id == channel.id:
                 creator = entry.user
-        icon = (channel.guild.icon or self.client.user.display_avatar).url
+        icon = (channel.guild.icon or self.bot.user.display_avatar).url
         
         embed = discord.Embed(title="A channel was created!", color=discord.Colour.green(), timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Name", value=channel.name, inline=False)
@@ -81,7 +81,7 @@ class Logger(commands.Cog):
         async for entry in channel.guild.audit_logs(action=discord.AuditLogAction.channel_delete, limit=1):
             if entry.target.id == channel.id:
                 moderator = entry.user
-        icon = (channel.guild.icon or self.client.user.display_avatar).url
+        icon = (channel.guild.icon or self.bot.user.display_avatar).url
         
         embed = discord.Embed(title="A channel was deleted!", color=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Name", value=channel.name, inline=False)
@@ -106,24 +106,24 @@ class Logger(commands.Cog):
         if not moderator:
             return
             
-        icon = (after.guild.icon or self.client.user.display_avatar).url
+        icon = (after.guild.icon or self.bot.user.display_avatar).url
         
         if before.name != after.name:
-            em = discord.Embed(title="A channel was renamed!", description=f"{before.mention} was renamed by {moderator.mention}", color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="A channel was renamed!", description=f"{before.mention} was renamed by {moderator.mention}", color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.add_field(name="Change", value=f"`{before.name}` -> `{after.name}`", inline=False)
             em.set_thumbnail(url=icon)
             em.set_footer(text=f"ID: {after.id}")
             await self.send_log("Server", after.guild, em)
         
         if before.position != after.position:
-            em = discord.Embed(title="A channel position was updated!", description=f"{before.mention} position was updated by {moderator.mention}", color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="A channel position was updated!", description=f"{before.mention} position was updated by {moderator.mention}", color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.add_field(name="Change", value=f"`{before.position}` -> `{after.position}`", inline=False)
             em.set_thumbnail(url=icon)
             em.set_footer(text=f"ID: {after.id}")
             await self.send_log("Server", after.guild, em)
         
         if before.overwrites != after.overwrites:
-            em = discord.Embed(title="Channel permissions updated!", description=f"{after.mention} was updated by {moderator.mention}", color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="Channel permissions updated!", description=f"{after.mention} was updated by {moderator.mention}", color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.set_thumbnail(url=icon)
             em.set_footer(text=f"ID: {after.id}")
             await self.send_log("Server", after.guild, em)
@@ -136,7 +136,7 @@ class Logger(commands.Cog):
         async for entry in role.guild.audit_logs(action=discord.AuditLogAction.role_create, limit=1):
             if entry.target.id == role.id:
                 moderator = entry.user
-        icon = (role.guild.icon or self.client.user.display_avatar).url
+        icon = (role.guild.icon or self.bot.user.display_avatar).url
         embed = discord.Embed(title="A role was created!", description=f"{role.mention} was created by {moderator}", color=role.color, timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Name", value=role.name, inline=False)
         embed.add_field(name="Position", value=role.position, inline=False)
@@ -156,7 +156,7 @@ class Logger(commands.Cog):
         async for entry in role.guild.audit_logs(action=discord.AuditLogAction.role_delete, limit=1):
             if entry.target.id == role.id:
                 moderator = entry.user
-        icon = (role.guild.icon or self.client.user.display_avatar).url
+        icon = (role.guild.icon or self.bot.user.display_avatar).url
         embed = discord.Embed(title="A role was deleted!", description=f"{role} was deleted by {moderator}", color=role.color, timestamp=datetime.datetime.utcnow())
         embed.add_field(name="Name", value=role.name, inline=False)
         embed.add_field(name="Position", value=role.position, inline=False)
@@ -256,7 +256,7 @@ class Logger(commands.Cog):
                 if entry.target.id == after.id:
                     moderator = entry.user
                     reason = entry.reason
-            em = discord.Embed(title="A member was muted!", color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="A member was muted!", color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.add_field(name="Offender", value=f"{after}", inline=False)
             em.add_field(name="Muted till", value=f"<t:{int(after.timed_out_until.timestamp())}>", inline=False)
             em.add_field(name="Moderator", value=f"{moderator}", inline=False)
@@ -282,7 +282,7 @@ class Logger(commands.Cog):
     @commands.Cog.listener("on_member_remove")
     async def member_kicked_or_left(self, member):
         
-        em = discord.Embed(description=f"{member.mention} {member}",color=self.client.color, timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(description=f"{member.mention} {member}",color=self.bot.color, timestamp=datetime.datetime.utcnow())
         em.set_author(name="Member left", icon_url=member.display_avatar.url)
         em.set_thumbnail(url=member.display_avatar.url)
         em.set_footer(text=f"ID: {member.id}")
@@ -356,13 +356,13 @@ class Logger(commands.Cog):
     @commands.Cog.listener("on_member_update")
     async def members_log(self, before, after):
         if before.display_avatar.url != after.display_avatar.url:
-            em = discord.Embed(title="Member updated!", description=f"{after.mention} update their avatar\n[before]({before.display_avatar.url}) -> [after]({after.display_avatar.url})",color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="Member updated!", description=f"{after.mention} update their avatar\n[before]({before.display_avatar.url}) -> [after]({after.display_avatar.url})",color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.set_thumbnail(url=after.display_avatar.url)
             em.set_footer(text=f"ID: {after.id}")
             await self.send_log("Member", after.guild, em)
         
         elif before.nick != after.nick:
-            em = discord.Embed(title="Member updated!", description=f"{after.mention} update their nickname\n`{before.nick}` -> `{after.nick}`",color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(title="Member updated!", description=f"{after.mention} update their nickname\n`{before.nick}` -> `{after.nick}`",color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.set_thumbnail(url=after.display_avatar.url)
             em.set_footer(text=f"ID: {after.id}")
             await self.send_log("Member", after.guild, em)
@@ -415,7 +415,7 @@ class Logger(commands.Cog):
     @commands.Cog.listener("on_message_edit")
     async def message_edit_log(self, before, after):
         if before.content == after.content or after.author.bot: return
-        em = discord.Embed(title="Message edited!", description=f"Message sent by {after.author.mention} was edited in {after.channel.mention}",color=self.client.color, timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title="Message edited!", description=f"Message sent by {after.author.mention} was edited in {after.channel.mention}",color=self.bot.color, timestamp=datetime.datetime.utcnow())
         em.set_author(name=after.author, icon_url=after.author.display_avatar.url)
         em.add_field(name="Before", value=before.content[:1024] or "**[No text found in original message]**", inline=False)
         em.add_field(name="After", value=after.content[:1024] or "**[No text found in edited message]**", inline=False)
@@ -432,7 +432,7 @@ class Logger(commands.Cog):
         transcript = await chat_exporter.raw_export(
             message.channel,
             messages = messages[::-1],
-            bot = self.client
+            bot = self.bot
         )
     
         if transcript:
@@ -442,7 +442,7 @@ class Logger(commands.Cog):
             )
         data = await self.fetch_data("Message", message.guild)
         if data:
-            logchannel = self.client.get_channel(data[0])
+            logchannel = self.bot.get_channel(data[0])
             if logchannel:
                 await logchannel.send(file=file)
     
@@ -466,7 +466,7 @@ class Logger(commands.Cog):
                 data = self.invites[str(member.guild.id)].get(invite.id)
                 if data:
                     if invite.uses > data:
-                        em = discord.Embed(title="Member joined", description=f"{member} ({member.mention})",color=self.client.color, timestamp=datetime.datetime.utcnow())
+                        em = discord.Embed(title="Member joined", description=f"{member} ({member.mention})",color=self.bot.color, timestamp=datetime.datetime.utcnow())
                         em.add_field(name="Inviter", value=f"{invite.inviter} ({invite.inviter.mention})", inline=False)
                         em.add_field(name="Created on", value=f"<t:{int(member.created_at.timestamp())}>", inline=False)
                         em.add_field(name="Link used", value=invite.url, inline=False)
@@ -489,7 +489,7 @@ class Logger(commands.Cog):
             em.set_footer(text=f"ID: {member.id}")
         
         elif before.channel and after.channel:
-            em = discord.Embed(description=f"{member.mention} switched voice channel {before.channel.mention} -> {after.channel.mention}", color=self.client.color, timestamp=datetime.datetime.utcnow())
+            em = discord.Embed(description=f"{member.mention} switched voice channel {before.channel.mention} -> {after.channel.mention}", color=self.bot.color, timestamp=datetime.datetime.utcnow())
             em.set_author(name=member, icon_url=member.display_avatar.url)
             em.set_footer(text=f"ID: {member.id}")
         
@@ -501,5 +501,5 @@ class Logger(commands.Cog):
         await self.send_log("Voice", member.guild, em)
     
     
-async def setup(client):
-    await client.add_cog(Logger(client))
+async def setup(bot):
+    await bot.add_cog(Logger(bot))

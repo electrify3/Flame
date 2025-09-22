@@ -6,8 +6,8 @@ from discord.ui import Button, View
 
 
 class Handler(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
     
     @commands.Cog.listener("on_message")
     async def manage_afk(self, message):
@@ -28,37 +28,37 @@ class Handler(commands.Cog):
     
     @commands.Cog.listener("on_message")
     async def return_prefix(self, message):
-        invite = Button(label="Invite Me", url=f"https://discord.com/api/oauth2/authorize?client_id={self.client.user.id}&permissions=1513962695871&scope=bot%20applications.commands")
-        server = Button(label="Support server", url=self.client.server)
+        invite = Button(label="Invite Me", url=f"https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=1513962695871&scope=bot%20applications.commands")
+        server = Button(label="Support server", url=self.bot.server)
         view = View()
         view.add_item(invite)
         view.add_item(server)
         if message.author.bot :
             return
-        if message.content.startswith(self.client.user.mention) :
-            prefix = tools.get_prefix(self.client, message)
+        if message.content.startswith(self.bot.user.mention) :
+            prefix = tools.get_prefix(self.bot, message)
             if prefix:
-                embed = discord.Embed(title = f'› My prefix is `{prefix}`\n› To get started type `{prefix}help`', color =self.client.color)
+                embed = discord.Embed(title = f'› My prefix is `{prefix}`\n› To get started type `{prefix}help`', color =self.bot.color)
             else:
-                embed = discord.Embed(title = f'› No prefix is enabled in this server!\n› To get started type `help`', color=self.client.color)
+                embed = discord.Embed(title = f'› No prefix is enabled in this server!\n› To get started type `help`', color=self.bot.color)
             await message.reply(embed=embed, view=view, mention_author=False)
     
     
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        server = Button(label="Support server", url=self.client.server)
+        server = Button(label="Support server", url=self.bot.server)
         view = View()
         view.add_item(server)
         if isinstance(error, commands.CommandNotFound):
             return
         if isinstance(error, commands.MissingPermissions):
-            await ctx.message.reply(f"{self.client.fail} | You don't have enough permissions to run this command!", view=view, mention_author=False)
+            await ctx.message.reply(f"{self.bot.fail} | You don't have enough permissions to run this command!", view=view, mention_author=False)
             return
         if isinstance(error, commands.BotMissingPermissions):
-            await ctx.message.reply(f"{self.client.fail} | I don't have enough permissions to execute this command!", view=view, mention_author=False)
+            await ctx.message.reply(f"{self.bot.fail} | I don't have enough permissions to execute this command!", view=view, mention_author=False)
             return
         em = discord.Embed(title="Error!", description=error, color=discord.Colour.red())
         await ctx.send(embed=em, view=view, mention_author=False)
 
-async def setup(client):
-    await client.add_cog(Handler(client))
+async def setup(bot):
+    await bot.add_cog(Handler(bot))

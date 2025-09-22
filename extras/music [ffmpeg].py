@@ -68,8 +68,8 @@ class LoopButtons(View):
 
 
 class Music(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Emusic:1165576153235460117>"
         self.configpath = "data/database/Configs.db"
         self.ydl_options = {
@@ -137,7 +137,7 @@ class Music(commands.Cog):
         data = self.get_song(ctx.guild.id)
         if not data:
             em = discord.Embed(title="End of queue", description="No song left to play.", color=discord.Colour.red())
-            asyncio.run_coroutine_threadsafe(ctx.send(embed=em), self.client.loop)
+            asyncio.run_coroutine_threadsafe(ctx.send(embed=em), self.bot.loop)
             self.database[ctx.guild.id]['now_playing'] = None
             return
         
@@ -150,19 +150,19 @@ class Music(commands.Cog):
             em.set_footer(text=f"Requested by: {data['requestor']}")
             source = asyncio.run(discord.FFmpegOpusAudio.from_probe(data['source'], **self.ffmpeg_options))
             ctx.voice_client.play(source, after = lambda c: self.after_playing(ctx))
-            asyncio.run_coroutine_threadsafe(ctx.send(embed=em), self.client.loop)
+            asyncio.run_coroutine_threadsafe(ctx.send(embed=em), self.bot.loop)
             
     
     async def check_player(self, ctx):
         if not ctx.voice_client:
-            await ctx.send(f"{self.client.fail} | I am not connected to any voice channel.")
+            await ctx.send(f"{self.bot.fail} | I am not connected to any voice channel.")
             return False
         if not ctx.author.voice:
-            await ctx.send(f"{self.client.fail} | You are not connected to any voice channel.")
+            await ctx.send(f"{self.bot.fail} | You are not connected to any voice channel.")
             return False
         if ctx.voice_client:
             if not ctx.voice_client.channel == ctx.author.voice.channel:
-                await ctx.send(f"{self.client.fail} | I am connected to another voice channel.")
+                await ctx.send(f"{self.bot.fail} | I am connected to another voice channel.")
                 return False
         return True
     
@@ -170,20 +170,20 @@ class Music(commands.Cog):
     async def initialise(self):
         db = sqlite3.connect(self.configpath)
         c = db.cursor()
-        for guild in self.client.guilds:
+        for guild in self.bot.guilds:
             self.set_structure(guild.id)
             c.execute(f'''SELECT Voice FROM Configs WHERE Guild = {guild.id}''')
             ch = c.fetchone()
             if ch:
                 try:
-                    vc = self.client.get_channel(ch[0])
+                    vc = self.bot.get_channel(ch[0])
                     await vc.connect(self_deaf=True)
                 except: continue
     
 
     @commands.Cog.listener("on_voice_state_update")
     async def clear_queue(self, member, before, after):
-        if member == self.client.user and not after:
+        if member == self.bot.user and not after:
             self.delete_all(member.guild.id)
         
     
@@ -192,14 +192,14 @@ class Music(commands.Cog):
     @commands.guild_only()
     async def join(self, ctx):
         if not ctx.author.voice:
-            await ctx.send(f"{self.client.warning} | You are not connected to any voice channel.")
+            await ctx.send(f"{self.bot.warning} | You are not connected to any voice channel.")
             return
         if ctx.voice_client:
-            await ctx.send(f"{self.client.warning} | I am already connected to a voice channel.")
+            await ctx.send(f"{self.bot.warning} | I am already connected to a voice channel.")
             return
         else:
             await ctx.author.voice.channel.connect(self_deaf=True)
-            await ctx.send(f"{self.client.success} | Successfully connected to `{ctx.author.voice.channel}`.")
+            await ctx.send(f"{self.bot.success} | Successfully connected to `{ctx.author.voice.channel}`.")
 
 
     @commands.hybrid_command(name="disconnect", description="Leaves the voice channel.", aliases=["dc", "leave"], usage="disconnect")
@@ -207,10 +207,10 @@ class Music(commands.Cog):
     @commands.has_guild_permissions(move_members=True)
     async def disconnect(self, ctx):
         if not ctx.voice_client:
-            await ctx.send(f"{self.client.fail} | I am not connected to any voice channel.")
+            await ctx.send(f"{self.bot.fail} | I am not connected to any voice channel.")
             return
         await ctx.voice_client.disconnect()
-        await ctx.message.add_reaction('👋')
+        await ctx.send(f'{self.bot.success} | Successfully left the vc and destroyed the player.')
         db = sqlite3.connect(self.configpath)
         c = db.cursor()
         c.execute(f"""UPDATE Configs SET Voice = 0 WHERE Guild = {ctx.guild.id}""")
@@ -254,7 +254,7 @@ class Music(commands.Cog):
         
         data = self.database[ctx.guild.id]['queue']
         if len(data)-1 < id:
-            await ctx.send(f"{self.client.fail} | No song found with id `{id}`.")
+            await ctx.send(f"{self.bot.fail} | No song found with id `{id}`.")
             return
         data = self.delete_song(ctx.guild.id, id)
         em = discord.Embed(title="Song Removed", description=f"[{data['title']}]({data['url']})", color=discord.Colour.dark_theme())
@@ -267,7 +267,7 @@ class Music(commands.Cog):
     async def nowplaying(self, ctx):
         data = self.get_song(ctx.guild.id)
         if not data:
-            await ctx.send("{self.client.warning} | Currently no song is playing.")
+            await ctx.send("{self.bot.warning} | Currently no song is playing.")
             return
         em = discord.Embed(title="Now Playing", description=f"[{data['title']}]({data['url']})", color=discord.Colour.dark_theme())
         em.set_author(name=ctx.me, icon_url=ctx.me.display_avatar.url)
@@ -287,7 +287,7 @@ class Music(commands.Cog):
         if not await self.check_player(ctx):
             return
         if not ctx.voice_client.is_playing():
-            await ctx.send(f"{self.client.fail} | Player is not playing anything.")
+            await ctx.send(f"{self.bot.fail} | Player is not playing anything.")
         
         data = self.get_song(ctx.guild.id)
         ctx.voice_client.stop()
@@ -305,9 +305,9 @@ class Music(commands.Cog):
         
         data = self.database[ctx.guild.id]['queue']
         if not data:
-            await ctx.send(f"{self.client.warning} | Queue is already empty.")
+            await ctx.send(f"{self.bot.warning} | Queue is already empty.")
         self.delete_all(ctx.guild.id)
-        await ctx.send(f"{self.client.success} | Successfully stopped the player and cleared the queue.")
+        await ctx.send(f"{self.bot.success} | Successfully stopped the player and cleared the queue.")
         ctx.voice_client.stop()
         
     
@@ -317,15 +317,15 @@ class Music(commands.Cog):
     @app_commands.describe(term="Song name or url which you want to play.")
     async def play(self, ctx, *, term):
         if not ctx.author.voice:
-            await ctx.send(f"{self.client.fail} | You are not connected to any voice channel.")
+            await ctx.send(f"{self.bot.fail} | You are not connected to any voice channel.")
             return
         if ctx.voice_client:
             if not ctx.voice_client.channel is ctx.author.voice.channel:
-                await ctx.send(f"{self.client.fail} | I am already connected to a voice channel.")
+                await ctx.send(f"{self.bot.fail} | I am already connected to a voice channel.")
                 return
         else:
             await ctx.author.voice.channel.connect(self_deaf=True)
-            await ctx.send(f"{self.client.success} | Successfully connected to `{ctx.author.voice.channel}`.")
+            await ctx.send(f"{self.bot.success} | Successfully connected to `{ctx.author.voice.channel}`.")
         em = discord.Embed(title="Initialising the player", color=discord.Colour.dark_theme())
         message = await ctx.send(embed=em)
         term = term.strip("<>")
@@ -384,10 +384,10 @@ class Music(commands.Cog):
     async def loop(self, ctx):
         if not await self.check_player(ctx):
             return
-        em = discord.Embed(title="Select a action", color=self.client.color)
+        em = discord.Embed(title="Select a action", color=self.bot.color)
         em.set_image(url="https://cdn.discordapp.com/attachments/1165698279334481980/1166047193069793431/select_one.png")
         view = LoopButtons(ctx, self.database)
         view.message = await ctx.send(embed=em, view=view)
 
-async def setup(client):
-    await client.add_cog(Music(client))
+async def setup(bot):
+    await bot.add_cog(Music(bot))

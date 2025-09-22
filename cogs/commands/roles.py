@@ -8,8 +8,8 @@ from discord import app_commands
 from discord.ext import commands
 
 class Role(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.emoji = "<:Erole:1127303371892736113>"
     
     @commands.hybrid_group(name="role", description="Adds or removes a role from a user.", usage="role <members/ids> <role>")
@@ -21,10 +21,10 @@ class Role(commands.Cog):
         role = tools.find_role(ctx, role)
         members = [*set(members)]
         if not members:
-            await ctx.send(f"{self.client.warning}| Provide atleast one @user/id.")
+            await ctx.send(f"{self.bot.warning}| Provide atleast one @user/id.")
             return
         if not role:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         if not await tools.is_addable(ctx, role):
             return
@@ -32,10 +32,10 @@ class Role(commands.Cog):
         for member in members:
             if role in member.roles :
                 await member.remove_roles(role, reason=f"{ctx.author} used role.")
-                await ctx.send(f'{self.client.success} | Successfully removed {role} from `{member}`.')
+                await ctx.send(f'{self.bot.success} | Successfully removed {role} from `{member}`.')
             else:
                 await member.add_roles(role, reason=f"{ctx.author} used role.")
-                await ctx.send(f'{self.client.success} | Successfully added {role} to `{member}`.')
+                await ctx.send(f'{self.bot.success} | Successfully added {role} to `{member}`.')
     
     
     @role.command(name="add", description="Adds a role to the member.", usage="role add <member/id> <role>")
@@ -46,11 +46,11 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         if not await tools.is_addable(ctx, role):
             return
         await member.add_roles(role, reason=f"{ctx.author} used role command.")
-        await ctx.send(f'{self.client.success} | Successfully added {role} to `{member}`.')
+        await ctx.send(f'{self.bot.success} | Successfully added {role} to `{member}`.')
     
     
     @role.command(name="remove", description="Removes a role to the member.", usage="role remove <member/id> <role>")
@@ -61,11 +61,11 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         if not await tools.is_addable(ctx, role):
             return
         await member.remove_roles(role, reason=f"{ctx.author} used role command.")
-        await ctx.send(f'{self.client.success} | Successfully removed {role} from `{member}`.')
+        await ctx.send(f'{self.bot.success} | Successfully removed {role} from `{member}`.')
     
     
     @role.command(name="position", description="Updates role position.", usage="role position <role> <new position>")
@@ -76,11 +76,11 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         if not await tools.is_editable(ctx, role) or not await tools.has_position(ctx, role):
             return
         await role.edit(position=position, reason=f"{ctx.author} used roleposition.")
-        await ctx.send(f'{self.client.success} | Successfully changed `{role}` position to **{position}**.')
+        await ctx.send(f'{self.bot.success} | Successfully changed `{role}` position to **{position}**.')
     
     
     @role.command(name="reset", description="Resets a role permissions.", usage="role reset <role>")
@@ -91,12 +91,12 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         if not await tools.is_editable(ctx, role) or not await tools.has_position(ctx, role):
             return
         permissions = discord.Permissions(permissions=0)
         await role.edit(permissions=permissions, reason=f"{ctx.author} used rolereset.")
-        await ctx.send(f'{self.client.success} | Successfully reset `{role}` permissions.')
+        await ctx.send(f'{self.bot.success} | Successfully reset `{role}` permissions.')
     
     
     @role.command(name="rename", description="Renames a role.", usage="role rename <role> <new name>", aliases=["name"])
@@ -107,12 +107,12 @@ class Role(commands.Cog):
         rname = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {rname} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {rname} not found!")
         if not await tools.is_editable(ctx, role) or not await tools.has_position(ctx, role):
             return
         initial_name = role.name
         await role.edit(name=name, reason=f"{ctx.author} used rolename.")
-        await ctx.send(f'{self.client.success} | Successfully changed `{initial_name}` name to `{name}`.')
+        await ctx.send(f'{self.bot.success} | Successfully changed `{initial_name}` name to `{name}`.')
     
     
     @role.command(name="icon", description="Updates a role icon, leave emoji blank to remove role icon.", usage="role icon <role> [emoji]")
@@ -123,7 +123,7 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            return await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            return await ctx.send(f"{self.bot.fail} | Role {name} not found!")
         if not await tools.is_editable(ctx, role) or not await tools.has_position(ctx, role):
             return
         usable = emoji
@@ -139,7 +139,7 @@ class Role(commands.Cog):
             else:
                 emoji = await emoji.read()
         await role.edit(display_icon=emoji, reason=f"{ctx.author} used roleicon.")
-        await ctx.send(f"{self.client.success} | Successfully changed `{role}` icon to {usable}.")
+        await ctx.send(f"{self.bot.success} | Successfully changed `{role}` icon to {usable}.")
     
     
     @role.command(name="everyone", description="Add or remove a role from everyone.", aliases=["all"], usage="role everyone <add/remove> <role>")
@@ -151,12 +151,12 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         if not await tools.is_addable(ctx, role):
             return
         if action == "add":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Adding {role.mention} to all members, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Adding {role.mention} to all members, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in ctx.guild.members:
@@ -167,13 +167,13 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully added a role for everyone.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully added a role for everyone.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
             
         elif action == "remove":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Removing {role.mention} from all members, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Removing {role.mention} from all members, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in role.members:
@@ -182,7 +182,7 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully removed a role from everyone.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully removed a role from everyone.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
@@ -198,12 +198,12 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         if not await tools.is_addable(ctx, role):
             return
         if action == "add":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Adding {role.mention} to all bots, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Adding {role.mention} to all bots, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in ctx.guild.members:
@@ -216,13 +216,13 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully added a role for bots.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully added a role for bots.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
             
         elif action == "remove":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Removing {role.mention} from all bots, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Removing {role.mention} from all bots, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in role.members:
@@ -233,7 +233,7 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully removed a role from bots.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully removed a role from bots.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
@@ -249,12 +249,12 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         if not await tools.is_addable(ctx, role):
             return
         if action == "add":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Adding {role.mention} to all humans, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Adding {role.mention} to all humans, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in ctx.guild.members:
@@ -267,13 +267,13 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully added a role for humans.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully added a role for humans.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
             
         elif action == "remove":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Removing {role.mention} from all humans, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Removing {role.mention} from all humans, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in role.members:
@@ -284,7 +284,7 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully removed a role from humans.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully removed a role from humans.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
@@ -300,18 +300,18 @@ class Role(commands.Cog):
         name = role
         role = tools.find_role(ctx, role)
         if not role:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         name = target
         target = tools.find_role(ctx, target)
         if not target:
-            await ctx.send(f"{self.client.fail} | Role {name} not found!")
+            await ctx.send(f"{self.bot.fail} | Role {name} not found!")
             return
         
         if not await tools.is_addable(ctx, role):
             return
         if action == "add":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Adding {role.mention} to all {target.mention} holders, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Adding {role.mention} to all {target.mention} holders, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in target.members:
@@ -322,13 +322,13 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully added a role for {target.mention} holders.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully added a role for {target.mention} holders.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
             
         elif action == "remove":
-            em = discord.Embed(title="Processing", description=f"{self.client.working} | Removing {role.mention} from all {target.mention} holders, it may take a while.", color=self.client.color)
+            em = discord.Embed(title="Processing", description=f"{self.bot.working} | Removing {role.mention} from all {target.mention} holders, it may take a while.", color=self.bot.color)
             message = await ctx.send(embed=em)
             success = 0
             for member in target.members:
@@ -339,12 +339,12 @@ class Role(commands.Cog):
                     success += 1
                 except:
                     continue
-            em = discord.Embed(title="Success",description=f"I successfully removed a role from {target.mention} holders.", color=self.client.color)
+            em = discord.Embed(title="Success",description=f"I successfully removed a role from {target.mention} holders.", color=self.bot.color)
             em.add_field(name="Role", value=role.mention, inline = False)
             em.add_field(name="Successful case", value=success, inline = False)
             em.add_field(name="Moderator", value=ctx.author.mention, inline = False)
         await message.edit(embed=em)
         
     
-async def setup(client):
-    await client.add_cog(Role(client))
+async def setup(bot):
+    await bot.add_cog(Role(bot))
