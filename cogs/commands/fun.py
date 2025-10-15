@@ -1,14 +1,12 @@
-import openai
 import random
 import aiohttp
 import discord
-import sqlite3
 import datetime
 
-from utils import tools, config
+from utils import tools
 from discord import app_commands
 from discord.ext import commands
-from discord.ui import View, Button
+from discord.ui import View
 
 
 
@@ -76,8 +74,6 @@ class TruthDare(View):
         await interaction.message.edit(view=None)
         view.message = await interaction.followup.send(embed=em, view=view)
         self.stop()
-
-
 
 
 class Fun(commands.Cog):
@@ -183,43 +179,6 @@ class Fun(commands.Cog):
         em.set_image(url=emoji.url)
         em.set_footer(text=f"Request by {ctx.author}.")
         await ctx.send(embed=em)
-    
-    
-    @commands.hybrid_command(name="openai", description="Generates a image with the help of OpenAI.", usage="openai <prompt>", aliases=["ai"])
-    @commands.guild_only()
-    @commands.cooldown(1, 60, commands.BucketType.user)
-    @app_commands.describe(prompt="Description for the image.")
-    async def openai(self, ctx, *, prompt):
-        db = sqlite3.connect("data/database/Configs.db")
-        c = db.cursor()
-        c.execute(f'''SELECT Premium FROM Configs WHERE Guild = {ctx.guild.id}''')
-        ai = c.fetchone()[0]
-        db.close()
-        if not ai:
-            await ctx.send(f"{self.bot.warning} Your server doesn't support this command!")
-            return
-        
-        message = await ctx.send(f"{self.bot.working} | Please be patient, generating your image!")
-        
-        em = discord.Embed(title=prompt, color=discord.Colour.dark_theme())
-        em.set_author(name=ctx.me, icon_url=ctx.me.display_avatar.url)
-        openai.api_key = config.openai
-        response = openai.Image.create(
-            prompt = prompt,
-            n=1,
-            size="1024x1024"
-        )
-        url = response['data'][0]["url"]
-        em.set_image(url=url)
-        em.set_footer(text=f"Request by {ctx.author}.")
-        invite = Button(label="Invite Me", url="https://discord.com/api/oauth2/authorize?client_id=1040314859868393613&permissions=1513962695871&scope=bot%20applications.commands")
-        server = Button(label="Support server", url="https://discord.gg/cZETBSrDrc")
-        download = Button(label="Download", url=url)
-        view = View()
-        view.add_item(invite)
-        view.add_item(server)
-        view.add_item(download)
-        await message.edit(content=None, embed=em, view=view)
     
     
     @commands.hybrid_command(name="truth", description="Gives a truth question.", usage="truth")

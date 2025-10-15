@@ -15,7 +15,7 @@ class Paginator(View, ABC):
         self.ctx: commands.Context = ctx
         self.page = page
         self.items = items
-        self.message: discord.Message | None = None
+        self.message: discord.Message = None
         self.max_pages = max_pages
     
     
