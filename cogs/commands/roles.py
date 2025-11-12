@@ -21,7 +21,7 @@ class Role(commands.Cog):
     async def role(self, ctx, members: commands.Greedy[discord.Member], *, role):
         name = role
         role = tools.find_role(ctx, role)
-        members = [*set(members)]
+        members = set(members)
         if not members:
             await ctx.send(f"{self.bot.warning}| Provide atleast one @user/id.")
             return

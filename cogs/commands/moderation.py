@@ -21,7 +21,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     @app_commands.describe(members="Members you want to mute.", time="duration of mute eg. 1h30m", reason="Reason of mute.")
     async def mute(self, ctx, members: commands.Greedy[discord.Member], time="1h", *, reason="No reason specified."):
-        members = [*set(members)]
+        members = set(members)
         
         if not members: return await ctx.send(f"{self.bot.warning} | Provide atleast one @user/id.")
         elif len(members) > 10 and ctx.author != ctx.guild.owner: return await ctx.send(f"{self.bot.fail} | You can use this command on more than `10` users.")
@@ -50,7 +50,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     @commands.guild_only()
     async def unmute(self, ctx, members: commands.Greedy[discord.Member],*, reason="No reason specified."):
-        members = [*set(members)]
+        members = set(members)
         
         if not members: return await ctx.send(f"{self.bot.warning} | Provide atleast one @user/id.")
         elif len(members) > 10 and ctx.author != ctx.guild.owner: return await ctx.send(f"{self.bot.fail} | You can use this command on more than `10` users.")
@@ -67,7 +67,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(kick_members = True)
     @commands.guild_only()
     async def kick(self, ctx, members: commands.Greedy[discord.Member], *, reason="No reason specified."):
-        members = [*set(members)]
+        members = set(members)
         
         if not members: return await ctx.send(f"{self.bot.warning} | Provide atleast one @user/id.")
         elif len(members) > 10 and ctx.author != ctx.guild.owner: return await ctx.send(f"{self.bot.fail} | You can use this command on more than `10` users.")
@@ -92,7 +92,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @app_commands.describe(users="Users you want to ban.", days="Days of message deletion (max value 7).", reason="Reason of ban.")
     async def ban(self, ctx, users: commands.Greedy[discord.User], days: typing.Optional[int] = 1, *, reason="No reason specified."):
-        users = [*set(users)]
+        users = set(users)
         
         if days > 7:
             days = 7
@@ -129,7 +129,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(users="users id(s)", reason="Reason of unban.")
     async def unban(self, ctx, users: commands.Greedy[discord.User], *, reason="No reason specified."):
-        users = [*set(users)]
+        users = set(users)
         
         if not users: return await ctx.send(f"{self.bot.warning} | Provide atleast one @user/id.")
         elif len(users) > 10 and ctx.author != ctx.guild.owner: return await ctx.send(f"{self.bot.fail} | You can use this command on more than `10` users.")
@@ -223,7 +223,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def user(self, ctx, users: commands.Greedy[discord.User], limit: int = 100):
         if limit > 1000: return await ctx.send(f"{self.bot.fail} | You can't delete more than **1000** messages at once.")
-        users = [*set(users)]
+        users = set(users)
         if not users: return await ctx.send(f"{self.bot.fail} | Invalid command usage, `users` are not specified!")
         
         def check(message):

@@ -275,7 +275,7 @@ class Tools(commands.Cog):
     @commands.guild_only()
     @app_commands.describe(members="Member(s) whose nickname you want to change.", name="Name you want to set.")
     async def nickname(self, ctx, members: commands.Greedy[discord.Member],*, name=None):
-        members = [*set(members)]
+        members = set(members)
         for member in members:
             try:
                 await member.edit(nick=name, reason=f"{ctx.author} used nickname.")
@@ -300,7 +300,7 @@ class Tools(commands.Cog):
                 urls = [element for element in raw_input if element.strip("<>").startswith("https://")]
                 emotes = [discord.PartialEmoji.from_str(element) for element in raw_input if re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', element)]
                 input = urls + emotes
-        input = [*set(input)]
+        input = set(input)
         if not input:
             await ctx.send(f"{self.bot.fail} | Failed, no `emoji/link` was found.")
             return
