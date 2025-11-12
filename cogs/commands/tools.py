@@ -2,8 +2,8 @@ import io
 import re
 import typing
 
+import aiohttp
 import discord
-import requests
 
 from discord import app_commands
 from discord.ui import View
@@ -315,7 +315,10 @@ class Tools(commands.Cog):
                     
             elif str(element).startswith("https://"):
                 name = f"emoji_{len(ctx.guild.emojis)+1}"
-                image = requests.get(element).content
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(element) as response:
+                        image = await response.read()
+
                 try:
                     emoji = await ctx.guild.create_custom_emoji(name=name, image=image, reason=f"{ctx.author} used steal command.")
                     await ctx.send(f"{self.bot.success} | Successfully added a emoji {emoji}.")
@@ -344,7 +347,10 @@ class Tools(commands.Cog):
         
         if str(input).strip("<>").startswith("https://"):
             name = f"sticker_{len(ctx.guild.stickers)+1}"
-            image = io.BytesIO(requests.get(input).content)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(input) as response:
+                    content = await response.read()
+                    image = io.BytesIO(content)
             file = discord.File(fp=image)
             try:
                 sticker = await ctx.guild.create_sticker(name=name, file=file, emoji="🤖", description=f"Added by {ctx.author}.", reason=f"{ctx.author} used sticker command.")
@@ -359,7 +365,10 @@ class Tools(commands.Cog):
             except: await ctx.send(f"{self.bot.fail} | Failed, You may check asset size/type or server sticker slots.")
         elif isinstance(input, discord.StickerItem):
             data = await input.fetch()
-            image = io.BytesIO(requests.get(input.url).content)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(input.url) as response:
+                    content = await response.read()
+                    image = io.BytesIO(content)
             file = discord.File(fp=image)
             try:
                 sticker = await ctx.guild.create_sticker(name=data.name, file=file, description=data.description, emoji=data.emoji, reason=f"{ctx.author} used sticker command.")
