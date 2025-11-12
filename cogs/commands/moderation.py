@@ -41,7 +41,7 @@ class Moderation(commands.Cog):
                 continue
             try:
                 await member.timeout(time, reason=f"{ctx.author}: {reason}")
-                await ctx.send(f"{self.bot.success} | Successfully muted `{member}` till <t:{int(time.total_seconds() + datetime.datetime.utcnow().timestamp())}>.")
+                await ctx.send(f"{self.bot.success} | Successfully muted `{member}` till <t:{int(time.total_seconds() + datetime.datetime.now(datetime.UTC).timestamp())}>.")
             except:
                 await ctx.send(f"{self.bot.fail} | Unable to mute `{member}`.")
     

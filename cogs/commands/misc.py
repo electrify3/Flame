@@ -14,7 +14,7 @@ from utils import tools
 class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.uptime = datetime.datetime.utcnow()
+        self.uptime = datetime.datetime.now(datetime.UTC)
         self.emoji = "<:Ediscover:1127305437549711372>"
         
     
@@ -22,7 +22,7 @@ class Misc(commands.Cog):
     @commands.guild_only()
     async def ping(self, ctx):
         latency = round(self.bot.latency * 1000)
-        uptime = str(datetime.datetime.utcnow() - self.uptime).split(".")[0]
+        uptime = str(datetime.datetime.now(datetime.UTC) - self.uptime).split(".")[0]
         em = discord.Embed(title=f"{ctx.me}", color=discord.Colour.dark_theme())
         em.add_field(name="<:Eping:1138002794197041223> Ping", value=f"{latency}ms", inline=False)
         em.add_field(name="<a:Euptime:1138003049407848510> Uptime", value=f"{uptime}", inline=False)
@@ -137,7 +137,7 @@ class Misc(commands.Cog):
         offline = total_members - active_members
         bots = len([member for member in ctx.guild.members if member.bot])
         icon = (ctx.guild.icon or ctx.me.display_avatar).url
-        em = discord.Embed(title=ctx.guild, color=ctx.author.color, timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title=ctx.guild, color=ctx.author.color, timestamp=datetime.datetime.now(datetime.UTC))
         em.set_thumbnail(url=icon)
         em.add_field(name="Members Status", value=f"**Total members**: {ctx.guild.member_count}\n(<:Euser:1135804161661874256> {total_members-bots} | <:Ebot:1135802717932097608> {bots})", inline=False)
         em.add_field(name="Activity Status", value=f"**Online members**: {active_members}\n(<:Eonline:1137355060645466153> {online} | <:Eidle:1137355053666144286> {idle} | <:Ednd:1137355047752187944> {dnd} | <:Einvisible:1137354444917456906> {offline})", inline=False)
@@ -202,7 +202,7 @@ class Misc(commands.Cog):
         elif permissions.administrator: acknowledgement = "Admin" 
         elif permissions.kick_members or permissions.ban_members: acknowledgement = "Moderator"
         elif permissions.manage_guild or permissions.manage_roles or permissions.manage_channels or permissions.manage_messages: acknowledgement = "Manager"
-        em = discord.Embed(description=f"[Avatar]({member.display_avatar.url})", color = member.color, timestamp = datetime.datetime.utcnow())
+        em = discord.Embed(description=f"[Avatar]({member.display_avatar.url})", color = member.color, timestamp = datetime.datetime.now(datetime.UTC))
         em.set_author(name=member, icon_url = member.display_avatar.url)
         em.set_thumbnail(url = member.display_avatar.url)
         em.add_field(name="Created at", value = f"<t:{int(member.created_at.timestamp())}> \n({(discord.utils.utcnow() - member.created_at).days} Days ago)", inline = False) 
@@ -269,7 +269,7 @@ class Misc(commands.Cog):
         
         text = ", ".join(f"`{member}`" for member in role.members[:30]) or "None"
         
-        em = discord.Embed(color = role.color, timestamp = datetime.datetime.utcnow())
+        em = discord.Embed(color = role.color, timestamp = datetime.datetime.now(datetime.UTC))
         em.set_thumbnail(url=role.display_icon.url if role.display_icon else ctx.guild.icon.url if ctx.guild.icon else ctx.me.display_avatar.url)
         em.add_field(name="Role ID", value=f"`{role.id}`", inline=False)
         em.add_field(name="Name", value=role, inline=False)

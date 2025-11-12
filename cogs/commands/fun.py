@@ -37,7 +37,7 @@ class TruthDare(View):
             async with session.get("https://api.truthordarebot.xyz/v1/truth") as response:
                 question = (await response.json())["question"]
         
-        em = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.now(datetime.UTC))
         em.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
         view = TruthDare()
         view.user = interaction.user
@@ -52,7 +52,7 @@ class TruthDare(View):
             async with session.get("https://api.truthordarebot.xyz/v1/dare") as response:
                 question = (await response.json())["question"]
         
-        em = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.now(datetime.UTC))
         em.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
         view = TruthDare()
         view.user = interaction.user
@@ -68,7 +68,7 @@ class TruthDare(View):
             async with session.get(f"https://api.truthordarebot.xyz/v1/{choice}") as response:
                 question = (await response.json())["question"]
         
-        em = discord.Embed(title=choice.title(), description=question, color=discord.Colour.blurple(), timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title=choice.title(), description=question, color=discord.Colour.blurple(), timestamp=datetime.datetime.now(datetime.UTC))
         em.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
         view = TruthDare()
         view.user = interaction.user
@@ -188,7 +188,7 @@ class Fun(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get("https://api.truthordarebot.xyz/v1/truth") as response:
                 question = (await response.json())["question"]
-        em = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.now(datetime.UTC))
         em.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
         view = TruthDare()
         view.user = ctx.author
@@ -201,7 +201,7 @@ class Fun(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get("https://api.truthordarebot.xyz/v1/dare") as response:
                 question = (await response.json())["question"]
-        em = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
+        em = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.now(datetime.UTC))
         em.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
         view = TruthDare()
         view.user = ctx.author
