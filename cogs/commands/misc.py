@@ -289,7 +289,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=em)
     
     
-    @commands.hybrid_command(name="serverinfo", description="Shows the server information.", aliases=["si"])
+    @commands.hybrid_command(name="serverinfo", description="Shows the server information.", aliases=["si"], usage='serverinfo')
     @commands.guild_only()
     async def serverinfo(self, ctx):
         roles = [role for role in ctx.guild.roles if not role.is_bot_managed()]

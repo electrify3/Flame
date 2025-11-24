@@ -19,7 +19,7 @@ class Admin(commands.Cog):
             raise "You are not a admin of this bot."
     
     
-    @commands.group(name="admin", description="This category commands can only be executed by bot admins.", invoke_without_command=True)
+    @commands.group(name="admin", description="Displays bot admins names.", usage='admin', invoke_without_command=True)
     async def admin(self, ctx):
         admins = [await self.bot.fetch_user(admin) for admin in config.admins]
         description = "\n".join(f"{a.mention} [{a}]" for a in admins)
@@ -71,7 +71,7 @@ class Admin(commands.Cog):
         em.add_field(name="Guilds", value=len(self.bot.guilds), inline=False)
         await ctx.send(embed=em)
     
-    @admin.command(name="eval", description="Executes a python code.", aliases=["execute"])
+    @admin.command(name="eval", description="Executes a python code.", aliases=["execute"], usage='eval')
     async def calculate(self, ctx,*, equation):
         value = eval(equation)
         await ctx.reply(f"```py\n{value}```", mention_author=False)
