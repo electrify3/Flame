@@ -40,7 +40,7 @@ TENOR=Your_tenor_api_key_here
 ```
 **Note:** Tenor key is only required for gif commands.
 
-### Setting Up Lavalink Server [Optional]
+### 3. Setting Up Lavalink Server [Optional]
 See [Lavalink](https://github.com/lavalink-devs/Lavalink) to setup your own server.  
 youtube-plugin is required too in the server.  
 
