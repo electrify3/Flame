@@ -1,74 +1,142 @@
 Flame
 =====
 
-**Flame** is a versatile, self-hosted Discord bot built for server management and community engagement. It supports both prefix (`??`) and slash (`/`) commands, with features spanning moderation, logging, role management, economy (points) system, music playback, utilities, and fun commands. Key highlights include an **interactive music player powered by Lavalink** (for high-quality audio streaming), a persistent SQLite-backed database for settings and leaderboards, and a rich suite of automated tools (like message embedder, polls, and even a “sniping” deleted-message fetcher). Flame uses intuitive status emojis for success/warning/failure and is designed to be user-friendly and extensible.
+**Flame** is a versatile, self-hosted Discord bot built for server management and community engagement. It supports both prefix (`??`) and slash (`/`) commands and even no prefix, with features spanning moderation, logging, role management,points system (useful in coducting tournaments), music playback, utilities, and fun commands.
 
-Features
+Modules
 --------
 
-*   **Moderation**: Kick, ban, mute, auto-moderation filters, and more – with audit logging.
-*   **Logging**: Tracks joins, leaves, deleted messages, infractions, etc., storing them in a database for later review.
-*   **Role Management**: Bulk-assign or remove roles to/from one or many members at once.
-*   **Economy/Points**: Manage user points (XP/currency) and display leaderboards with pagination.
-*   **Music Playback**: Stream music from YouTube and other sources using a Lavalink server. Provides queue, skip, pause, loop, and interactive buttons in Discord for control.
-*   **Utilities**: Miscellaneous commands like `embed` (send a custom embed), `nuke` (bulk-delete with confirmation), `snipe` (retrieve last deleted message), `steal` (copy emojis), etc.
-*   **Fun Commands**: Image searches, jokes, or trivia (e.g. web requests, game commands) for entertainment.
-*   **Custom Configurations**: Server-specific settings (prefix, toggles, etc.) stored in an SQLite database.
+*   **Moderation**: Contains typical moderation commands but enhanced and with better controlls.
+*   **Logging**: Send Logs (Member join, ban, update, message delete etc).
+*   **Roles**: Role Commands with Bulk-assign or remove features.
+*   **Points**: Its a points system design to tournaments, players can get points on winning but lose on loosing.
+*   **Music**: It supports YT streaming. 
+*   **Tools**: Contain commads such as channel lock/unlock, slowmode setup.
+*   **Fun**: Fun commands such as gifs, Truth and Dare and much more.
+*   **Voice**: Commands supporting voice channel and members moderation.
+*   **Misc**: Misc commands such as userinfo, avatar, .
 
-Flame’s **slash command support** means you can type commands with `/` and see autocomplete, alongside its traditional prefix (`??`) commands. This ensures broad compatibility across servers.
-
-Setup & Requirements
+Requirements
 --------------------
 
-Flame runs on **Python 3.8+**. It also requires a separate **Java-based Lavalink server** for music. Before running Flame, ensure you have the following installed and configured:
+**Python 3.12+**  
+**Java 24.0+** (if hosting a local lavalink server)  
+**ffmpeg 7.1+** (Again its optional, install if you're using `extras/music [ffmpeg].py`)
 
-*   **Python 3.8 or newer**: Install from python.org and use `pip` to install dependencies.
-*   **Dependencies**: From the repository root, run:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    This installs libraries like `discord.py`, `lavalink`, `aiohttp`, `yt-dlp`, etc.
-*   **Discord Bot Application**: Create a bot in the Discord Developer Portal and get its **Token**. In your application’s _Bot_ settings, **enable the Message Content Intent** (and also _Server Members Intent_ if using member-based commands).
-*   **.env Configuration**: Copy `.env.example` to `.env` and set the following environment variables:
-    *   `TOKEN`: your Discord bot token.
-    *   `TENOR`: (optional) a Tenor API key for GIF commands.
-*   **Lavalink Server**: You'll need to setup a [Lavalink server](https://github.com/lavalink-devs/Lavalink), Flame will connect to this for music streaming. You may need to do some tweaks in `cogs/music.py` too.
-*   **FFmpeg**: Install FFmpeg on your system PATH. This is required if youre using ffmpeg music module in `extras/`.
-*   **Invite the Bot**: Use the OAuth2 URL Generator in the Developer Portal (scopes `bot` and `applications.commands`) and give it the needed permissions (e.g. Manage Messages, Manage Roles, Send Messages, Connect/Speak for voice, etc.). The bot can only be invited to servers where you have the **Manage Server** permission. See Discord’s documentation for generating an invite link.
+Setup
+--------------------
+### 1. Installing all the requirements.  
 
-Running the Bot
----------------
+```
+pip install -r requirements.txt
+```
 
-1.  **Database Files**: On first run, Flame will auto-create SQLite DB files in `data/database/` for configs, logs, and points. No manual setup needed.
-2.  **Launch**: Run the main script:
-    ```bash
-    python main.py
-    ```
-    The bot will load all cogs (modules) and become online. In console it will print messages like `cogs.commands.admin activated!`.
-3.  **Initial Commands**: Once running, the bot responds to the default prefix `??`. Use `??help` or `/help` to see available commands. You can also ping the bot (like `@Flame`) to have it display the current prefix for your server.
+### 2. Setup ENV file
+```
+TOKEN=Your_discord_bot_token_here
+TENOR=Your_tenor_api_key_here
+```
+**Note:** Tenor key is only required for gif commands.
 
-Usage Highlights
-----------------
+### Setting Up Lavalink Server [Optional]
+See [Lavalink](https://github.com/lavalink-devs/Lavalink) to setup your own server.  
+youtube-plugin is required too in the server.  
 
-*   **Prefix & Slash**: Flame’s commands can be used as either traditional prefix commands or as slash commands. For example, `??ban @user reason` or `/ban @user reason` (as a slash command). Slash commands will only work after the bot’s commands have been synced (this happens on start).
-*   **Configuration Commands**: The bot has admin-only groups (e.g. `admin`, `configs`) for changing settings like prefix or toggling features (e.g. disabling music or logging). These commands are restricted to the bot owner/admins or server administrators.
-*   **Role Command Example**: The `??role` group can add or remove a role for multiple users at once. For example, `??role add @Alice @Bob Member` assigns the _Member_ role to Alice and Bob. This makes bulk role management easy without having to click in the Discord UI.
-*   **Music Commands**: Use `??play <query>` to search/play music. The bot will display an embed showing the current track and add buttons for _pause_, _skip_, _stop_, _loop_, etc. You can also manage the queue (view next tracks) with buttons that page through results. Because it uses Lavalink, audio streaming is efficient and high-quality. (You must have the Lavalink server running for music to work.)
-*   **Points/Leaderboard**: Administrators can award or set points for members (e.g. `??points add @User 100`). Any member can view the server’s points leaderboard with pagination. This can be used for gamification or reward systems.
-*   **Logging**: You can configure a channel for mod logs. When enabled, events like member joins/leaves or message deletions are logged into the database and can be viewed with commands (or automatically posted to a channel if coded).
-*   **Utilities**:
-    *   `??embed` lets an admin send a custom embed in any channel.
-    *   `??nuke` (with confirmation) bulk-deletes messages in a channel (for quick moderation cleanup).
-    *   `??snipe` retrieves the last deleted message in a channel.
-    *   `??steal` can copy custom emojis given an emoji or image URL.
-        These tools streamline many repetitive tasks in servers.
-*   **Fun Commands**: There are likely commands under `fun` (e.g. image search, random memes, or facts). Check `/help` for specifics. These provide light-hearted entertainment and enhance engagement.
+Use these `application.yml` file in your lavalink server:
+```yml
+server: # REST and WS server
+  port: 8080
+  address: 127.0.0.1
+  http2:
+    enabled: false # Whether to enable HTTP/2 support
+plugins:
+  youtube:
+    enabled: true # Whether this source can be used.
+    allowSearch: true # Whether "ytsearch:" and "ytmsearch:" can be used.
+    allowDirectVideoIds: true # Whether just video IDs can match. If false, only complete URLs will be loaded.
+    allowDirectPlaylistIds: true # Whether just playlist IDs can match. If false, only complete URLs will be loaded.
+    # The clients to use for track loading. See below for a list of valid clients.
+    # Clients are queried in the order they are given (so the first client is queried first and so on...)
+    clients:
+      - MUSIC
+      - ANDROID_VR
+      - WEB
+      - WEBEMBEDDED 
+#  name: # Name of the plugin
+#    some_key: some_value # Some key-value pair for the plugin
+#    another_key: another_value
+lavalink:
+  plugins:
+    -dependency: "dev.lavalink.youtube:youtube-plugin:1.13.4"
+    snapshot: false
+  server:
+    password: "password"
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      nico: true
+      http: true # warning: keeping HTTP enabled without a proxy configured could expose your server's IP address.
+      local: false
+    filters: # All filters are enabled by default
+      volume: true
+      equalizer: true
+      karaoke: true
+      timescale: true
+      tremolo: true
+      vibrato: true
+      distortion: true
+      rotation: true
+      channelMix: true
+      lowPass: true
+    nonAllocatingFrameBuffer: false # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
+    bufferDurationMs: 400 # The duration of the NAS buffer. Higher values fare better against longer GC pauses. Duration <= 0 to disable JDA-NAS. Minimum of 40ms, lower values may introduce pauses.
+    frameBufferDurationMs: 5000 # How many milliseconds of audio to keep buffered
+    opusEncodingQuality: 10 # Opus encoder quality. Valid values range from 0 to 10, where 10 is best quality but is the most expensive on the CPU.
+    resamplingQuality: LOW # Quality of resampling operations. Valid values are LOW, MEDIUM and HIGH, where HIGH uses the most CPU.
+    trackStuckThresholdMs: 10000 # The threshold for how long a track can be stuck. A track is stuck if does not return any audio data.
+    useSeekGhosting: true # Seek ghosting is the effect where whilst a seek is in progress, the audio buffer is read from until empty, or until seek is ready.
+    youtubePlaylistLoadLimit: 6 # Number of pages at 100 each
+    playerUpdateInterval: 5 # How frequently to send player updates to clients, in seconds
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+    gc-warnings: true
 
-Support and Links
------------------
+    timeouts:
+      connectTimeoutMs: 3000
+      connectionRequestTimeoutMs: 3000
+      socketTimeoutMs: 3000
 
-*   Consult the bot’s **built in help command** for command details and examples.
-*   Keep your bot updated: pull changes from this repo and restart.
-*   The code is **open-source** under the Apache 2.0 license (see `LICENSE` file). You can modify and adapt it to your needs.
+metrics:
+  prometheus:
+    enabled: false
+    endpoint: /metrics
 
-Flame is designed to be a full-featured yet easy-to-run bot. By following the above setup and using the built-in commands, you can manage your Discord community effectively. Enjoy the blend of utility and fun that Flame brings to your server!
+sentry:
+  dsn: ""
+  environment: ""
+
+logging:
+  file:
+    path: ./logs/
+
+  level:
+    root: INFO
+    lavalink: INFO
+
+  request:
+    enabled: true
+    includeClientInfo: true
+    includeHeaders: false
+    includeQueryString: true
+    includePayload: true
+    maxPayloadLength: 10000
+
+
+  logback:
+    rollingpolicy:
+      max-file-size: 1GB
+      max-history: 30
+```
