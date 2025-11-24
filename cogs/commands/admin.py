@@ -19,14 +19,14 @@ class Admin(commands.Cog):
             raise "You are not a admin of this bot."
     
     
-    @commands.group(name="admin", description="this category commands can only be executed by bot admins.", invoke_without_command=True)
+    @commands.group(name="admin", description="This category commands can only be executed by bot admins.", invoke_without_command=True)
     async def admin(self, ctx):
         admins = [await self.bot.fetch_user(admin) for admin in config.admins]
         description = "\n".join(f"{a.mention} [{a}]" for a in admins)
         em = discord.Embed(title="Admins", description=description, color=discord.Colour.blurple())
         await ctx.send(embed=em)
     
-    @admin.command()
+    @admin.command(name='say', description='Echo\'s a text', usage='say <text>')
     async def say(self, ctx,*, message=None):
         await ctx.message.delete()
         if message is None :
@@ -35,13 +35,13 @@ class Admin(commands.Cog):
             return
         await ctx.send(f'{message}')
     
-    @admin.command()
+    @admin.command(name='reply', description='replies to a given message', usage='reply <message_id/url> <text>')
     async def reply(self, ctx, message : discord.Message,*, content):
         await ctx.message.delete()
         await message.reply(content) 
     
     
-    @admin.command()
+    @admin.command(name='guild', description='displays server info of a given server.', usage='guild <guild_id>')
     async def guild(self, ctx, guild: discord.Guild):
         if guild.icon:
             em = discord.Embed(description=f"[Server icon]({guild.icon.url})", color = ctx.author.color)
@@ -62,7 +62,7 @@ class Admin(commands.Cog):
         await ctx.send(embed=em)
     
     
-    @admin.command()
+    @admin.command(name='stats', description='display bot statistics', usage='stats')
     async def stats(self, ctx):
         em = discord.Embed(color=discord.Colour.random())
         em.set_author(name=ctx.me, icon_url=ctx.me.display_avatar.url)
@@ -71,13 +71,13 @@ class Admin(commands.Cog):
         em.add_field(name="Guilds", value=len(self.bot.guilds), inline=False)
         await ctx.send(embed=em)
     
-    @admin.command(name="eval", description="Executes.", aliases=["execute"])
+    @admin.command(name="eval", description="Executes a python code.", aliases=["execute"])
     async def calculate(self, ctx,*, equation):
         value = eval(equation)
         await ctx.reply(f"```py\n{value}```", mention_author=False)
     
 
-    @admin.command(name="premium", description="Toggles premium")
+    @admin.command(name="premium", description="Toggles premium features for the guild", usage='premium')
     @commands.is_owner()
     async def premium(self, ctx: commands.Context):
         async with aiosqlite.connect('data/database/Configs.db') as db:
