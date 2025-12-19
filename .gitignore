@@ -2,5 +2,4 @@
 .env
 Lavalink/
 __pycache__/
-/data/database/*
-!.gitkeep
+*.db
