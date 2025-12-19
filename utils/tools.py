@@ -35,7 +35,7 @@ def find_role(ctx: commands.Context, rawstr: str) -> discord.Role | None:
 
 
 async def get_prefix(client: discord.Client, message: discord.Message) -> str:
-    async with aiosqlite.connect('data/database/Configs.db') as db:
+    async with aiosqlite.connect('data/database/configs.db') as db:
         async with db.execute(f'''SELECT Prefix, "No prefix" FROM Configs WHERE Guild = {message.guild.id}''') as c:
             data = await c.fetchone()
             prefix, status = data[0], data[1]

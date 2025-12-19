@@ -108,7 +108,7 @@ class Points(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.emoji = "<:Elist:1127305243978371245>"
-        self.path = "data/database/Points.db"
+        self.path = "data/database/points.db"
     
     
     async def setup_user(self, guild, user):

@@ -8,7 +8,7 @@ from utils import config
 class Configs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.path = "data/database/Configs.db"
+        self.path = "data/database/configs.db"
         self.emoji = "<:Ecog:1127303860227154000>"
     
     @commands.Cog.listener("on_ready")

@@ -9,7 +9,7 @@ class Logging(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.emoji = "<:Elogging:1141365823722754069>"
-        self.path = "data/database/Logging.db"
+        self.path = "data/database/logging.db"
         asyncio.run_coroutine_threadsafe(self.create_table(), self.bot.loop)
     
     async def create_table(self):

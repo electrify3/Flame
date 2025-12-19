@@ -80,7 +80,7 @@ class Admin(commands.Cog):
     @admin.command(name="premium", description="Toggles premium features for the guild", usage='premium')
     @commands.is_owner()
     async def premium(self, ctx: commands.Context):
-        async with aiosqlite.connect('data/database/Configs.db') as db:
+        async with aiosqlite.connect('data/database/configs.db') as db:
             async with db.execute(f'''SELECT Premium FROM Configs WHERE Guild = {ctx.guild.id}''') as c:
                 data = await c.fetchone()
                 is_premium = data[0]

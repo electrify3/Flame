@@ -70,7 +70,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.emoji = "<:Emusic:1165576153235460117>"
-        self.configpath = "data/database/Configs.db"
+        self.configpath = "data/database/configs.db"
         self.ydl_options = {
             'format': 'bestaudio/best',
             'quiet': True,

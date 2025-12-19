@@ -12,7 +12,7 @@ class Logger(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.invites = {}
-        self.path = "data/database/Logging.db"
+        self.path = "data/database/logging.db"
     
     
     async def fetch_data(self, category, guild):
