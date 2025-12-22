@@ -262,7 +262,7 @@ class Points(commands.Cog):
     
     
     
-    @points.command(name="leaderboard", description="Display points leaderboard.", aliases=["lb"], usage="points leaderboard")
+    @points.command(name="leaderboard", description="Display points leaderboard.", aliases=["lb"], usage="points leaderboard [page]")
     @commands.guild_only()
     @app_commands.describe(page="Page of the leaderboard.")
     async def leaderboard(self, ctx, page: int = 1):
