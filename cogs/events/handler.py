@@ -53,14 +53,17 @@ class Handler(commands.Cog):
         view.add_item(server)
         if isinstance(error, commands.CommandNotFound):
             return
-        if isinstance(error, commands.MissingPermissions):
+        elif isinstance(error, commands.MissingPermissions):
             await ctx.message.reply(f"{self.bot.fail} | You don't have enough permissions to run this command!", view=view, mention_author=False)
-            return
-        if isinstance(error, commands.BotMissingPermissions):
+        elif isinstance(error, commands.BotMissingPermissions):
             await ctx.message.reply(f"{self.bot.fail} | I don't have enough permissions to execute this command!", view=view, mention_author=False)
-            return
-        em = discord.Embed(title="Error!", description=error, color=discord.Colour.red())
-        await ctx.send(embed=em, view=view, mention_author=False)
+        elif isinstance(error, commands.CommandOnCooldown):
+            embed = discord.Embed(description=f'{self.bot.warning} | You are on cooldown. Try again after {int(error.retry_after)} seconds', colour=discord.Colour.blue())
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+            await ctx.send(embed=embed)
+        else:
+            em = discord.Embed(title="Error!", description=error, color=discord.Colour.red())
+            await ctx.send(embed=em, view=view, mention_author=False)
 
 async def setup(bot):
     await bot.add_cog(Handler(bot))

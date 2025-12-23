@@ -285,7 +285,17 @@ class Economy(commands.Cog):
             self.failed_crimes: list[str] = f_crimes.readlines()
     
     def format_money(self, money: int) -> str:
+        if money < 0:
+            return f'- {self.currency} {abs(money):,}'
         return f'{self.currency} {money:,}'
+
+    def format_rank(self, rank: int) -> str:
+        if 10 <= rank % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(rank % 10, "th")
+        return f"{rank}{suffix}"
+
 
     def make_embed(self, user: discord.User, money: int, text: str) -> discord.Embed:
         embed = discord.Embed(timestamp=datetime.datetime.now(datetime.UTC))
@@ -303,14 +313,15 @@ class Economy(commands.Cog):
 
 
     @commands.Cog.listener("on_ready")
-    async def setup(self):
+    async def setup(self) -> None:
         await self.economy.setup_table()
         await self.shop.setup_table()
         await self.inventory.setup_table()
 
 
-    @commands.hybrid_command(name='work',description='Make some small money', aliases=['earn'], usage='work')
+    @commands.hybrid_command(name='work',description='Makes some small money.', aliases=['earn'], usage='work')
     @commands.guild_only()
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def work(self, ctx: commands.Context) -> None:
         money: int = random.randint(1, 5000)
         dialouge: str = random.choice(self.works)
@@ -322,6 +333,7 @@ class Economy(commands.Cog):
 
     @commands.hybrid_command(name='crime',description='Commits a crime, it can make you more money with a risk of fine.', usage='crime')
     @commands.guild_only()
+    @commands.cooldown(1, 300, commands.BucketType.user)
     async def crime(self, ctx: commands.Context) -> None:
         money: int = random.randint(1, 10000) * random.choice([-1, 1])
         dialouge: str = random.choice(self.successful_crimes if money > 0 else self.failed_crimes)
@@ -333,11 +345,11 @@ class Economy(commands.Cog):
     
     @commands.hybrid_command(name='balance', description='Shows cureent balance of the member.', aliases=['bal', 'cash', 'money'], usage='balance [member]')
     @commands.guild_only()
-    async def balance(self, ctx: commands.Context, member: discord.Member = commands.Author):
+    async def balance(self, ctx: commands.Context, member: discord.Member = commands.Author) -> None:
         data = await self.economy.get_member(member)
         rank = await self.economy.get_rank(member)
 
-        embed = discord.Embed(description=f"Leaderboard Rank: {rank}", timestamp=datetime.datetime.now(datetime.UTC), colour=discord.Colour.blue())
+        embed = discord.Embed(description=f"Leaderboard Rank: {self.format_rank(rank)}", timestamp=datetime.datetime.now(datetime.UTC), colour=discord.Colour.blue())
         embed.set_author(name=member.name, icon_url=member.avatar.url if member.avatar else member.default_avatar.url)
         embed.set_footer(text=f'ID: {member.id}')
 
@@ -347,7 +359,74 @@ class Economy(commands.Cog):
         await ctx.send(embed=embed)
     
 
-    @commands.command(name="leaderboard", description="Display economy leaderboard.", aliases=["lb"], usage="leaderboard [page]")
+
+    @commands.hybrid_command(name='deposite', description='Deposites current money into your bank.', aliases=['dep'], usage='deposite [amount | all]')
+    @commands.guild_only()
+    async def deposite(self, ctx: commands.Context, amount: str) -> None:
+        if amount.isdigit(): amount = int(amount)
+
+        if isinstance(amount, str):
+            if amount.lower() != 'all':
+                embed = self.make_embed(ctx.author, -1, f"{self.bot.warning} | Invalid amount {amount}!")
+                await ctx.send(embed=embed)
+            else:
+                member = await self.economy.get_member(ctx.author)
+                if member.money <= 0:
+                    await ctx.send(f"{self.bot.warning} | You can't deposite {self.format_money(member.money)} in your bank!")
+                else:
+                    await self.economy.add_bank(ctx.author, member.money)
+                    await self.economy.deduct_balance(ctx.author, member.money)
+                    embed = self.make_embed(ctx.author, member.money, f"{self.bot.success} | Deposited $money to your bank!")
+                    await ctx.send(embed=embed)
+        else:
+            member = await self.economy.get_member(ctx.author)
+            if member.money <= 0:
+                await ctx.send(f"{self.bot.warning} | You can't deposite {self.format_money(member.money)} in your bank!")
+            elif member.money < amount:
+                await ctx.send(f"{self.bot.warning} | You don't have {self.format_money(amount)} in hands!")
+            else:
+                await self.economy.add_bank(ctx.author, amount)
+                await self.economy.deduct_balance(ctx.author, amount)
+                embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Deposited $money to your bank!")
+                await ctx.send(embed=embed)
+
+        
+
+
+    @commands.hybrid_command(name='withdraw', description='Withdraws money from your bank.', aliases=['with'], usage='withdraw [amount | all]')
+    @commands.guild_only()
+    async def withdraw(self, ctx: commands.Context, amount: str) -> None:
+        if amount.isdigit(): amount = int(amount)
+
+        if isinstance(amount, str):
+            if amount.lower() != 'all':
+                embed = self.make_embed(ctx.author, -1, f"{self.bot.warning} | Invalid amount {amount}!")
+                await ctx.send(embed=embed)
+            else:
+                member = await self.economy.get_member(ctx.author)
+                if member.bank <= 0:
+                    await ctx.send(f"{self.bot.warning} | You don't have enough money in your bank!")
+                else:
+                    await self.economy.deduct_bank(ctx.author, member.bank)
+                    await self.economy.add_balance(ctx.author, member.bank)
+                    embed = self.make_embed(ctx.author, member.bank, f"{self.bot.success} | Withdrew $money from your bank!")
+                    await ctx.send(embed=embed)
+        else:
+            member = await self.economy.get_member(ctx.author)
+            if member.bank <= 0 or member.bank < amount:
+                await ctx.send(f"{self.bot.warning} | You don't have enough money in your bank!")
+            else:
+                await self.economy.deduct_bank(ctx.author, amount)
+                await self.economy.add_balance(ctx.author, amount)
+                embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Withdrew $money from your bank!")
+                await ctx.send(embed=embed)
+
+
+
+
+
+
+    @commands.hybrid_command(name="leaderboard", description="Display economy leaderboard.", aliases=["lb"], usage="leaderboard [page]")
     @commands.guild_only()
     @app_commands.describe(page="Page of the leaderboard.")
     async def leaderboard(self, ctx: commands.Context, page: int = 1):
