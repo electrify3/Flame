@@ -346,6 +346,7 @@ class Economy(commands.Cog):
     @commands.hybrid_command(name='balance', description='Shows cureent balance of the member.', aliases=['bal', 'cash', 'money'], usage='balance [member]')
     @commands.guild_only()
     async def balance(self, ctx: commands.Context, member: discord.Member = commands.Author) -> None:
+        
         data = await self.economy.get_member(member)
         rank = await self.economy.get_rank(member)
 
@@ -422,7 +423,105 @@ class Economy(commands.Cog):
                 await ctx.send(embed=embed)
 
 
+    @commands.hybrid_command(name='give', description='Use this command to pay money to other member.', aliases=['pay', 'send'], usage='give <member> <amount>')
+    @commands.guild_only()
+    @app_commands.describe(member='Member whom you want to pay money.', amount='Amount of money you want to pay.')
+    async def give(self, ctx: commands.Context, member: discord.Member, amount: str) -> None:
+        if amount.isdigit(): amount = int(amount)
 
+        if isinstance(amount, str):
+            if amount.lower() != 'all':
+                embed = self.make_embed(ctx.author, -1, f"{self.bot.warning} | Invalid amount {amount}!")
+                await ctx.send(embed=embed)
+            else:
+                author = await self.economy.get_member(ctx.author)
+                if author.money <= 0:
+                    await ctx.send(f"{self.bot.warning} | You can't send {self.format_money(author.money)} to someone!")
+                else:
+                    await self.economy.add_balance(member, author.money)
+                    await self.economy.deduct_balance(ctx.author, author.money)
+                    embed = self.make_embed(ctx.author, author.money, f"{self.bot.success} | Sent $money to {member.mention}!")
+                    await ctx.send(embed=embed)
+        else:
+            author = await self.economy.get_member(ctx.author)
+            if author.money <= 0:
+                await ctx.send(f"{self.bot.warning} | You can't send {self.format_money(author.money)} to someone!")
+            elif author.money < amount:
+                await ctx.send(f"{self.bot.warning} | You don't have {self.format_money(amount)} in hands!")
+            else:
+                await self.economy.add_balance(member, amount)
+                await self.economy.deduct_balance(ctx.author, amount)
+                embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Sent $money to {member.mention}!")
+                await ctx.send(embed=embed)
+
+
+
+    @commands.hybrid_group(name='add', description='Use this command to add money to other members.', usage='add [money | bank] <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom you want to add money.', amount='Amount of money you want to send.')
+    async def add(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.add_balance(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Added $money to {member.mention}'s Cash!")
+        await ctx.send(embed=embed)
+
+
+    @add.command(name='money', description='Use this command to add money to other members cash.', usage='add money <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom you want to add money.', amount='Amount of money you want to send.')
+    async def amoney(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.add_balance(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Added $money to {member.mention}'s Cash!")
+        await ctx.send(embed=embed)
+    
+
+    @add.command(name='bank', description='Use this command to add money to other members bank.', usage='add bank <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom you want to add money.', amount='Amount of money you want to send.')
+    async def amoney(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.add_bank(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Added $money to {member.mention}'s Bank!")
+        await ctx.send(embed=embed)
+
+
+
+
+    @commands.hybrid_group(name='update', description='Use this command to set money of other member.', usage='update [money | bank] <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    async def update(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.update_balance(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Set {member.mention}'s Cash to $money!")
+        await ctx.send(embed=embed)
+
+
+    @update.command(name='money', description='Use this command to set money of other member.', usage='update money <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    async def umoney(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.update_balance(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Set {member.mention}'s Cash to $money!")
+        await ctx.send(embed=embed)
+    
+
+    @update.command(name='bank', description='Use this command to set bank money of member.', usage='add bank <member> <amount>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    async def ubank(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+        
+        await self.economy.update_bank(member, amount)
+        embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Set {member.mention}'s Bank money to $money!")
+        await ctx.send(embed=embed)
 
 
 
