@@ -14,7 +14,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-class Flame(commands.Bot):
+class Bot(commands.Bot):
     def __init__(self):
         super().__init__(
             command_prefix = tools.get_prefix,
@@ -43,5 +43,5 @@ class Flame(commands.Bot):
     async def on_ready(self):
         print(f"Logged in as: {self.user}")
 
-bot = Flame()
+bot = Bot()
 bot.run(token)

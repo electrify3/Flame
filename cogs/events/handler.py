@@ -1,4 +1,5 @@
 import time
+import typing
 
 import discord
 
@@ -7,12 +8,15 @@ from discord.ui import Button, View
 
 from utils import tools
 
+if typing.TYPE_CHECKING:
+    from main import Bot
+
 class Handler(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot: commands.Bot = bot
+    def __init__(self, bot: 'Bot'):
+        self.bot: Bot = bot
     
     @commands.Cog.listener("on_message")
-    async def manage_afk(self, message):
+    async def manage_afk(self, message: discord.Message):
         if message.author.bot or message.channel == message.author.dm_channel: return
             
         if str(message.author.id) in tools.get_afk() and tools.get_afk()[str(message.author.id)]["message"]:
@@ -29,7 +33,7 @@ class Handler(commands.Cog):
     
     
     @commands.Cog.listener("on_message")
-    async def return_prefix(self, message):
+    async def return_prefix(self, message: discord.Message):
         invite = Button(label="Invite Me", url=f"https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=1513962695871&scope=bot%20applications.commands")
         server = Button(label="Support server", url=self.bot.server)
         view = View()
@@ -47,23 +51,33 @@ class Handler(commands.Cog):
     
     
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        server = Button(label="Support server", url=self.bot.server)
-        view = View()
-        view.add_item(server)
-        if isinstance(error, commands.CommandNotFound):
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        
+        if isinstance(error, commands.CommandNotFound) or isinstance(error, commands.CheckFailure):
             return
-        elif isinstance(error, commands.MissingPermissions):
-            await ctx.message.reply(f"{self.bot.fail} | You don't have enough permissions to run this command!", view=view, mention_author=False)
-        elif isinstance(error, commands.BotMissingPermissions):
-            await ctx.message.reply(f"{self.bot.fail} | I don't have enough permissions to execute this command!", view=view, mention_author=False)
-        elif isinstance(error, commands.CommandOnCooldown):
-            embed = discord.Embed(description=f'{self.bot.warning} | You are on cooldown. Try again after {int(error.retry_after)} seconds', colour=discord.Colour.blue())
-            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-            await ctx.send(embed=embed)
-        else:
-            em = discord.Embed(title="Error!", description=error, color=discord.Colour.red())
-            await ctx.send(embed=em, view=view, mention_author=False)
 
-async def setup(bot):
+        embed = discord.Embed(colour=self.bot.color)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
+
+
+        if isinstance(error, commands.MissingPermissions):
+            embed.description = f"{self.bot.fail} | You don't have enough permissions to run this command!"
+            await ctx.send(embed=embed, ephemeral=True)
+
+        elif isinstance(error, commands.BotMissingPermissions):
+            embed.description = f"{self.bot.fail} | I don't have enough permissions to execute this command!"
+            await ctx.send(embed=embed, ephemeral=True)
+
+        elif isinstance(error, commands.CommandOnCooldown):
+            embed.description = f'{self.bot.warning} | You are on cooldown. Try again after {int(error.retry_after)} seconds!'
+            await ctx.send(embed=embed, ephemeral=True)
+
+        else:
+            view = View()
+            view.add_item(Button(label="Support server", url=self.bot.server))
+
+            embed.description = f'{self.bot.fail} | {error}!'
+            await ctx.send(embed=embed, view=view, ephemeral=True)
+
+async def setup(bot: 'Bot'):
     await bot.add_cog(Handler(bot))

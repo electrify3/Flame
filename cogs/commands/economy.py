@@ -11,8 +11,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.paginator import Paginator
+
 if TYPE_CHECKING:
-    from main import Flame
+    from main import Bot
 
 
 class DataBaseClient:
@@ -269,8 +270,8 @@ class Controller(Paginator):
 
 
 class Economy(commands.Cog):
-    def __init__(self, bot: 'Flame'):
-        self.bot: Flame = bot
+    def __init__(self, bot: 'Bot'):
+        self.bot: Bot = bot
 
         self.economy: EconomyClient = EconomyClient()
         self.shop: ShopClient = ShopClient()
