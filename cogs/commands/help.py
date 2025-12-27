@@ -1,23 +1,29 @@
+import typing
+
 import discord
+
+from typing import Sequence
 
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Button, Select
 
+if typing.TYPE_CHECKING:
+    from main import Bot
 
 class Menu(Select):
-    def __init__(self, options: list[discord.SelectOption], ctx: commands.Context, cogs: list[commands.Cog]):
+    def __init__(self, options: Sequence[discord.SelectOption], ctx: commands.Context, cogs: Sequence[commands.Cog]):
         super().__init__(
         options = options,
         placeholder = "Select a category for more info"
         )
-        self.ctx = ctx
-        self.cogs = cogs
+        self.ctx: commands.Context = ctx
+        self.cogs: Sequence[commands.Cogs] = cogs
         self.current: int = 0
     
     
     @staticmethod
-    async def default_help(ctx: commands.Context, cogs: list[commands.Cog]) -> discord.Embed:
+    async def default_help(ctx: commands.Context, cogs: Sequence[commands.Cog]) -> discord.Embed:
         embed = discord.Embed(description = f"<:Earrow:1127175875549462602> My prefix for this server is `{await ctx.bot.get_prefix(ctx.message) or None}`\n<:Earrow:1127175875549462602> Total commands: `{len(ctx.bot.commands)}`\n<:Earrow:1127175875549462602> [Invite {ctx.me.name}]({discord.utils.oauth_url(ctx.me.id, permissions=discord.Permissions(permissions=1513962695871))}) | [Support Server]({ctx.bot.server}) | [Wiki]({ctx.bot.wiki})\n<:Earrow:1127175875549462602> Use `{ctx.prefix}help <command>` for more information on a command.", color=discord.Colour.dark_theme())
         embed.set_author(name=f"{ctx.me.name} help panel", icon_url=ctx.me.display_avatar.url)
         embed.add_field(name="Command Categories", value='\n'.join(f'{cog.emoji} {cog.qualified_name}' for cog in cogs), inline=False)
@@ -26,7 +32,7 @@ class Menu(Select):
         return embed
     
     @staticmethod
-    def cog_help(ctx, cog, page=""):
+    def cog_help(ctx, cog: commands.Cog, page: str = "") -> None:
         embed = discord.Embed(color=ctx.bot.color)
         embed.set_author(name=f"{cog.qualified_name} Commands", icon_url=ctx.me.display_avatar.url)
         embed.set_thumbnail(url=ctx.me.display_avatar.url)
@@ -36,7 +42,7 @@ class Menu(Select):
         return embed
     
     
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
         if interaction.user != self.ctx.author:
             return await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
             
@@ -70,18 +76,18 @@ class Menu(Select):
     
 
 class Controller(View):
-    def __init__(self, ctx, options, cogs):
+    def __init__(self, ctx: commands.Context, options: Sequence[discord.SelectOption], cogs: Sequence[commands.Cog]) -> None:
         super().__init__(
         timeout = 120
         )
-        self.ctx = ctx
-        self.message = None
-        self.menu = Menu(options, self.ctx, cogs)
-        self.cogs = self.menu.cogs
+        self.ctx: commands.Context = ctx
+        self.message: discord.Message | None = None
+        self.menu: Menu = Menu(options, self.ctx, cogs)
+        self.cogs: Sequence[commands.Cog] = self.menu.cogs
         self.add_item(self.menu)
     
     
-    async def interaction_check(self, interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
             await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
             return False
@@ -89,14 +95,14 @@ class Controller(View):
             return True
     
     
-    async def on_timeout(self):
+    async def on_timeout(self) -> None:
         for children in self.children:
             if not (hasattr(children, "label") and children.label):
                 children.disabled = True
         await self.message.edit(view=self)
     
     
-    def set_view(self):
+    def set_view(self) -> None:
         if self.menu.current == 0:
             self.children[0].disabled = True
             self.children[1].disabled = True
@@ -115,7 +121,7 @@ class Controller(View):
     
     
     @discord.ui.button(emoji="<:Edoublearrow2:1180724072678694962>", disabled=True)
-    async def start(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def start(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.menu.current = 0
         self.set_view()
@@ -125,7 +131,7 @@ class Controller(View):
     
     
     @discord.ui.button(emoji="<:Earrow2:1180723707279315057>", disabled=True)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.menu.current -= 1
         self.set_view()
@@ -137,14 +143,14 @@ class Controller(View):
         
     
     @discord.ui.button(emoji="<:Edelete:1158793677712392213>")
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.stop()
         await interaction.message.delete()
         
     
     @discord.ui.button(emoji="<:Earrow:1127175875549462602>")
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.menu.current += 1
         self.set_view()
@@ -153,7 +159,7 @@ class Controller(View):
     
     
     @discord.ui.button(emoji="<:Edoublearrow:1180723248388902933>")
-    async def end(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def end(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
         self.menu.current = len(self.menu.options) - 1
         self.set_view()
@@ -164,14 +170,14 @@ class Controller(View):
 
 
 class Help(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-        self.emoji = "<:Ebook:1127301294399426610>"
-        self.invite = discord.utils.oauth_url(self.bot.user.id, permissions=discord.Permissions(permissions=1513962695871))
-        self.owner = self.bot.application.owner
+    def __init__(self, bot: 'Bot') -> None:
+        self.bot: Bot = bot
+        self.emoji: str = "<:Ebook:1127301294399426610>"
+        self.invite: str = discord.utils.oauth_url(self.bot.user.id, permissions=discord.Permissions(permissions=1513962695871))
+        self.owner: discord.User = self.bot.application.owner
     
     
-    def command_help(self, ctx, command):
+    def command_help(self, ctx, command) -> discord.Embed:
         embed = discord.Embed(color=discord.Colour.dark_theme())
         embed.set_author(name=f"{command} command", icon_url=ctx.me.display_avatar.url)
         embed.add_field(name="<:Eonline:1137355060645466153> Instructions", value=">>> Required: `<>`\nOptional: `[]`\nDo not type this when using commands.", inline=False)
@@ -185,7 +191,7 @@ class Help(commands.Cog):
     @commands.hybrid_command(name="help", description="Display commands list.", usage="help [command]")
     @app_commands.describe(command_name="Name of the command.")
     @app_commands.rename(command_name="command")
-    async def help(self, ctx, *, command_name = None):
+    async def help(self, ctx: commands.Context, *, command_name: str | None = None) -> None:
         view = View()
         if command_name:
             command = self.bot.get_command(command_name.lower())
@@ -211,5 +217,5 @@ class Help(commands.Cog):
         if not command_name: view.message = message
 
 
-async def setup(bot):
+async def setup(bot: 'Bot') -> None:
     await bot.add_cog(Help(bot))

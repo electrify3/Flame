@@ -1,18 +1,23 @@
-import aiosqlite
+import typing
 
+import aiosqlite
+import discord
 from discord.ext import commands
 
 from utils import config
 
+if typing.TYPE_CHECKING:
+    from main import Bot
+
 
 class Configs(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.path = "data/database/configs.db"
-        self.emoji = "<:Ecog:1127303860227154000>"
+    def __init__(self, bot: 'Bot'):
+        self.bot: Bot = bot
+        self.path: str = "data/database/configs.db"
+        self.emoji: str = "<:Ecog:1127303860227154000>"
     
     @commands.Cog.listener("on_ready")
-    async def setup_config(self):
+    async def setup_config(self) -> None:
 
         async with aiosqlite.connect(self.path) as db:
             await db.execute(f"""CREATE TABLE IF NOT EXISTS Configs(
@@ -40,7 +45,7 @@ class Configs(commands.Cog):
     
     
     @commands.Cog.listener("on_guild_join")
-    async def create_new_config(self, guild):
+    async def create_new_config(self, guild: discord.Guild) -> None:
 
         async with aiosqlite.connect(self.path) as db:
             async with db.execute(f"""SELECT Guild FROM Configs""") as c:
@@ -55,12 +60,12 @@ class Configs(commands.Cog):
     
     
     @commands.hybrid_group(name="prefix", description="Configures prefix for your server.", usage="prefix <set/off>")
-    async def prefix(self, ctx):
+    async def prefix(self, ctx: commands.Context) -> None:
         return
     
     @prefix.command(name="set", description="Sets a custom prefix for your server.", usage="prefix set <new prefix>")
     @commands.has_permissions(manage_guild=True)
-    async def set(self, ctx, prefix: str):
+    async def set(self, ctx: commands.Context, prefix: str) -> None:
 
         async with aiosqlite.connect(self.path) as db:
             await db.execute(f"""UPDATE Configs SET Prefix = ?, 'No prefix' = ? WHERE Guild = {ctx.guild.id}""", (str(prefix), 0))
@@ -70,7 +75,7 @@ class Configs(commands.Cog):
     
     @prefix.command(name="off", description="Sets no prefix for your server.", usage="prefix off")
     @commands.has_permissions(manage_guild=True)
-    async def off(self, ctx):
+    async def off(self, ctx: commands.Context) -> None:
 
         async with aiosqlite.connect(self.path) as db:
             await db.execute(f"""UPDATE Configs SET 'No prefix' = 1 WHERE Guild = {ctx.guild.id}""")
@@ -79,5 +84,5 @@ class Configs(commands.Cog):
         await ctx.send(f"{self.bot.success} | Successfully enabled no prefix for the guild `{ctx.guild.id}`.")
     
     
-async def setup(bot):
+async def setup(bot: 'Bot') -> None:
     await bot.add_cog(Configs(bot))

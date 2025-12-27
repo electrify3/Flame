@@ -34,13 +34,15 @@ class Bot(commands.Bot):
         self.working = config.working
         self.color = config.color
     
-    async def setup_hook(self):
+    async def setup_hook(self) -> None:
+
         for cog in cogs:
             await self.load_extension(cog)
             print(cog, "activated!")
+
         await self.tree.sync()
     
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f"Logged in as: {self.user}")
 
 bot = Bot()

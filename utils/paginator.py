@@ -13,10 +13,10 @@ class Paginator(View, ABC):
         timeout = 120
         )
         self.ctx: commands.Context = ctx
-        self.page = page
-        self.items = items
-        self.message: discord.Message = None
-        self.max_pages = max_pages
+        self.page: int = page
+        self.items: Sequence = items
+        self.message: discord.Message | None = None
+        self.max_pages: int = max_pages
     
     
     async def interaction_check(self, interaction: discord.Interaction) -> bool:

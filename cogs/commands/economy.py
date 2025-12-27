@@ -4,7 +4,7 @@ import random
 import typing
 
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple, TYPE_CHECKING
+from typing import List, Sequence, Tuple
 
 import discord
 from discord import app_commands
@@ -12,7 +12,7 @@ from discord.ext import commands
 
 from utils.paginator import Paginator
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from main import Bot
 
 
@@ -529,7 +529,7 @@ class Economy(commands.Cog):
     @commands.hybrid_command(name="leaderboard", description="Display economy leaderboard.", aliases=["lb"], usage="leaderboard [page]")
     @commands.guild_only()
     @app_commands.describe(page="Page of the leaderboard.")
-    async def leaderboard(self, ctx: commands.Context, page: int = 1):
+    async def leaderboard(self, ctx: commands.Context, page: int = 1) -> None:
         
         data = await self.economy.get_members(ctx.guild)
 
@@ -554,5 +554,5 @@ class Economy(commands.Cog):
         view.message = await ctx.send(embed=embed, view=view)
 
     
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(Economy(bot))
