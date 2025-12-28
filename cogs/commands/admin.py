@@ -38,7 +38,7 @@ class Admin(commands.Cog):
         await ctx.message.delete()
         await ctx.send(text)
     
-    @admin.command(name='reply', description='replies to a given message', usage='admin reply <message_id/url> <text>')
+    @admin.command(name='reply', description='replies to a given message.', usage='admin reply <message_id/url> <text>')
     async def reply(self, ctx: commands.Context, message : discord.Message, *, content: str) -> None:
         await ctx.message.delete()
         await message.reply(content) 
@@ -69,7 +69,7 @@ class Admin(commands.Cog):
         await ctx.send(embed=em)
     
     
-    @admin.command(name='stats', description='display bot statistics', usage='admin stats')
+    @admin.command(name='stats', description='display bot statistics.', usage='admin stats')
     async def stats(self, ctx: commands.Context) -> None:
         em = discord.Embed(color=discord.Colour.random())
         em.set_author(name=ctx.me, icon_url=ctx.me.display_avatar.url)
@@ -79,7 +79,7 @@ class Admin(commands.Cog):
         await ctx.send(embed=em)
     
 
-    @admin.command(name="premium", description="Toggles premium features for the guild", usage='admin premium')
+    @admin.command(name="premium", description="Toggles premium features for the guild.", usage='admin premium')
     @commands.is_owner()
     async def premium(self, ctx: commands.Context) -> None:
         async with aiosqlite.connect('data/database/configs.db') as db:
