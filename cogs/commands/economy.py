@@ -315,7 +315,7 @@ class Economy(commands.Cog):
             embed.description = text.replace('$money', self.format_money(money))
         else:
             embed.color = discord.Colour.red()
-            embed.description = text.replace('$money', self.format_money(money*-1))
+            embed.description = text.replace('$money', self.format_money(money))
 
         return embed
 
@@ -490,7 +490,7 @@ class Economy(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(member='Member whom you want to add money.', amount='Amount of money you want to send.')
-    async def amoney(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
+    async def abank(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
         
         await self.economy.add_bank(member, amount)
         embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Added $money to {member.mention}'s Bank!")
@@ -557,11 +557,10 @@ class Economy(commands.Cog):
             return
         
         success: int = random.choice([1, -1])
-        percent: int = random.randint(30, 90) 
-        amount: int = self.percentage(member_economy.money, percent) # minimum 30% and maximum 90% of total cash
+        percent: int = random.randint(30, 90) # Members can gain or lose between 30%-90% 
 
-        if amount > author_networth and success < 0:
-            fine: int = self.percentage(author_networth, percent)
+        if success < 0:
+            fine: int = self.percentage(author_networth, percent) # Fine should be taken from networth
 
             embed = self.make_embed(ctx.author, fine * -1, f"You got caught robbing {member.mention}, you payed them a fine of $money.")
 
@@ -569,16 +568,14 @@ class Economy(commands.Cog):
             await self.economy.deduct_balance(ctx.author, fine)
 
         else:
+            amount: int = self.percentage(member_economy.money, percent) # Money in hand can only be robbed
+
             embed = self.make_embed(ctx.author, amount, f"You successfully robbed {member.mention}, you took total of $money.")
 
             await self.economy.add_balance(ctx.author, amount)
             await self.economy.deduct_balance(member, amount)
 
         await ctx.send(embed=embed)
-
-
-
-
 
 
 
