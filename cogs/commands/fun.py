@@ -50,8 +50,7 @@ class TruthDare(View):
         embed = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.now(datetime.UTC))
         embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
 
-        view = TruthDare()
-        view.author = interaction.user
+        view = TruthDare(interaction.user)
 
         await interaction.message.edit(view=None)
         view.message = await interaction.followup.send(embed=embed, view=view)
@@ -69,8 +68,7 @@ class TruthDare(View):
         embed = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.now(datetime.UTC))
         embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
 
-        view = TruthDare()
-        view.author = interaction.user
+        view = TruthDare(interaction.user)
 
         await interaction.message.edit(view=None)
         view.message = await interaction.followup.send(embed=embed, view=view)
@@ -89,8 +87,7 @@ class TruthDare(View):
         embed = discord.Embed(title=choice.title(), description=question, color=discord.Colour.blurple(), timestamp=datetime.datetime.now(datetime.UTC))
         embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
 
-        view = TruthDare()
-        view.author = interaction.user
+        view = TruthDare(interaction.user)
 
         await interaction.message.edit(view=None)
         view.message = await interaction.followup.send(embed=embed, view=view)
@@ -210,8 +207,7 @@ class Fun(commands.Cog):
 
         embed = discord.Embed(title="Truth", description=question, color=discord.Colour.green(), timestamp=datetime.datetime.now(datetime.UTC))
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
-        view = TruthDare()
-        view.user = ctx.author
+        view = TruthDare(ctx.author)
         view.message = await ctx.send(embed=embed, view=view)
     
     
@@ -225,8 +221,7 @@ class Fun(commands.Cog):
 
         embed = discord.Embed(title="Dare", description=question, color=discord.Colour.red(), timestamp=datetime.datetime.now(datetime.UTC))
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
-        view = TruthDare()
-        view.user = ctx.author
+        view = TruthDare(ctx.author)
         view.message = await ctx.send(embed=embed, view=view)
 
 
