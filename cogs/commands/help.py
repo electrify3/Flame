@@ -44,7 +44,7 @@ class Menu(Select):
     
     async def callback(self, interaction: discord.Interaction) -> None:
         if interaction.user != self.ctx.author:
-            return await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
+            return await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
             
         await interaction.response.defer()
         
@@ -89,7 +89,7 @@ class Controller(View):
     
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
-            await interaction.response.send_message(f"{interaction.bot.warning} | You don't own this session!", ephemeral=True)
+            await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
             return False
         else:
             return True
