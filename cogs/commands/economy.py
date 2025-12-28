@@ -285,10 +285,12 @@ class Economy(commands.Cog):
             self.successful_crimes: list[str] = s_crimes.readlines()
             self.failed_crimes: list[str] = f_crimes.readlines()
     
+
     def format_money(self, money: int) -> str:
         if money < 0:
             return f'- {self.currency} {abs(money):,}'
         return f'{self.currency} {money:,}'
+
 
     def format_rank(self, rank: int) -> str:
         if 10 <= rank % 100 <= 20:
@@ -296,6 +298,11 @@ class Economy(commands.Cog):
         else:
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(rank % 10, "th")
         return f"{rank}{suffix}"
+    
+
+    def percentage(self, amount: int | float, percent: int | float, *, return_int: bool = True) -> int | float:
+        value =  (percent / 100) * amount
+        return int(value) if return_int else value
 
 
     def make_embed(self, user: discord.User, money: int, text: str) -> discord.Embed:
@@ -322,7 +329,7 @@ class Economy(commands.Cog):
 
     @commands.hybrid_command(name='work',description='Makes some small money.', aliases=['earn'], usage='work')
     @commands.guild_only()
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def work(self, ctx: commands.Context) -> None:
         money: int = random.randint(1, 5000)
         dialouge: str = random.choice(self.works)
@@ -334,7 +341,7 @@ class Economy(commands.Cog):
 
     @commands.hybrid_command(name='crime',description='Commits a crime, it can make you more money with a risk of fine.', usage='crime')
     @commands.guild_only()
-    @commands.cooldown(1, 300, commands.BucketType.user)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def crime(self, ctx: commands.Context) -> None:
         money: int = random.randint(1, 10000) * random.choice([-1, 1])
         dialouge: str = random.choice(self.successful_crimes if money > 0 else self.failed_crimes)
@@ -495,7 +502,7 @@ class Economy(commands.Cog):
     @commands.hybrid_group(name='update', description='Use this command to set money of other member.', usage='update [money | bank] <member> <amount>')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    @app_commands.describe(member='Member whose money you want to update.', amount='Amount of money you want to set.')
     async def update(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
         
         await self.economy.update_balance(member, amount)
@@ -506,7 +513,7 @@ class Economy(commands.Cog):
     @update.command(name='money', description='Use this command to set money of other member.', usage='update money <member> <amount>')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    @app_commands.describe(member='Member whose money you want to update.', amount='Amount of money you want to set.')
     async def umoney(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
         
         await self.economy.update_balance(member, amount)
@@ -514,15 +521,65 @@ class Economy(commands.Cog):
         await ctx.send(embed=embed)
     
 
-    @update.command(name='bank', description='Use this command to set bank money of member.', usage='add bank <member> <amount>')
+    @update.command(name='bank', description='Use this command to set bank money of member.', usage='update bank <member> <amount>')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    @app_commands.describe(member='Member whom money you want to update.', amount='Amount of money you want to set.')
+    @app_commands.describe(member='Member whose money you want to update.', amount='Amount of money you want to set.')
     async def ubank(self, ctx: commands.Context, member: discord.Member, amount: int) -> None:
         
         await self.economy.update_bank(member, amount)
         embed = self.make_embed(ctx.author, amount, f"{self.bot.success} | Set {member.mention}'s Bank money to $money!")
         await ctx.send(embed=embed)
+
+
+    @commands.hybrid_command(name='rob', description='Robs a member with risk of getting caught.', usage='rob <member>')
+    @commands.guild_only()
+    @app_commands.describe(member='Member whom you want to rob.')
+    async def rob(self, ctx: commands.Context, member: discord.Member) -> None:
+
+        if member.bot:
+            await ctx.send(f'{self.bot.warning} | You should not rob poor machines.')
+            return
+        elif member == ctx.author:
+            await ctx.send(f'{self.bot.warning} | You can not rob your self.')
+            return
+        
+        member_economy: EconomyMember = await self.economy.get_member(member)
+        author_economy: EconomyMember = await self.economy.get_member(ctx.author)
+        author_networth: int = author_economy.money + author_economy.bank
+
+        if member_economy.money < 2000:
+            await ctx.send(f"{self.bot.warning} | {member} doesn't have much money in hands to rob for :(")
+            return
+        
+        if author_networth < 1000:
+            await ctx.send(f"{self.bot.warning} | You currently don't have enough networth to perform this action!")
+            return
+        
+        success: int = random.choice([1, -1])
+        percent: int = random.randint(30, 90) 
+        amount: int = self.percentage(member_economy.money, percent) # minimum 30% and maximum 90% of total cash
+
+        if amount > author_networth and success < 0:
+            fine: int = self.percentage(author_networth, percent)
+
+            embed = self.make_embed(ctx.author, fine * -1, f"You got caught robbing {member.mention}, you payed them a fine of $money.")
+
+            await self.economy.add_balance(member, fine)
+            await self.economy.deduct_balance(ctx.author, fine)
+
+        else:
+            embed = self.make_embed(ctx.author, amount, f"You successfully robbed {member.mention}, you took total of $money.")
+
+            await self.economy.add_balance(ctx.author, amount)
+            await self.economy.deduct_balance(member, amount)
+
+        await ctx.send(embed=embed)
+
+
+
+
+
 
 
 
@@ -554,5 +611,5 @@ class Economy(commands.Cog):
         view.message = await ctx.send(embed=embed, view=view)
 
     
-async def setup(bot) -> None:
+async def setup(bot: 'Bot') -> None:
     await bot.add_cog(Economy(bot))
