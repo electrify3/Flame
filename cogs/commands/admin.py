@@ -143,5 +143,5 @@ class Admin(commands.Cog):
         await message.edit(content=f'{self.bot.success} | Reloaded all extensions.')
 
     
-async def setup(bot) -> None:
+async def setup(bot: 'Bot') -> None:
     await bot.add_cog(Admin(bot))
