@@ -9,6 +9,7 @@ from typing import List, Sequence, Tuple
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.ui import View
 
 from utils.paginator import Paginator
 
@@ -268,6 +269,45 @@ class Controller(Paginator):
 
 
 
+class ResetGuildEconomy(View):
+    def __init__(self, ctx: commands.Context, db_client: DataBaseClient):
+        super().__init__(
+        timeout = 30
+        )
+        self.ctx = ctx
+        self.db = db_client
+        self.message = None
+    
+    async def on_timeout(self):
+        await self.message.edit(content=f"{self.ctx.bot.fail} | No confirmation found in last 30seconds.", embed =None, view=None)
+    
+    
+    async def interaction_check(self, interaction: discord.Interaction):
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message(f"{interaction.client.warning} | You don't own this session!", ephemeral=True)
+            return False
+        else:
+            return True
+    
+    @discord.ui.button(label='Reset', style=discord.ButtonStyle.green)
+    async def reset(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        await self.db.connection.execute(f"""DELETE FROM economy WHERE guild_id = ?""", (self.ctx.guild.id,))
+        await self.db.connection.commit()
+
+        await interaction.message.edit(content=f"{interaction.client.success} | Economy reset was sucessfull.", embed=None, view=None)
+        self.stop()
+        
+    @discord.ui.button(label='Abort', style=discord.ButtonStyle.red)
+    async def abort(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        await interaction.message.edit(content=f"{interaction.client.warning} | Action aborted!", embed=None, view=None)
+        self.stop()
+
+
+
+
 
 class Economy(commands.Cog):
     def __init__(self, bot: 'Bot'):
@@ -320,11 +360,16 @@ class Economy(commands.Cog):
         return embed
 
 
-    @commands.Cog.listener("on_ready")
-    async def setup(self) -> None:
+    async def cog_load(self) -> None:
         await self.economy.setup_table()
         await self.shop.setup_table()
         await self.inventory.setup_table()
+
+
+    async def cog_unload(self) -> None:
+        await self.economy.close_connection()
+        await self.shop.close_connection()
+        await self.inventory.close_connection()
 
 
     @commands.hybrid_command(name='work',description='Makes some small money.', aliases=['earn'], usage='work')
@@ -578,6 +623,32 @@ class Economy(commands.Cog):
         await ctx.send(embed=embed)
 
 
+    
+    
+    @commands.hybrid_command(name='economyreset', description='Reset guild economy.', aliases=['er'], usage='economyreset')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def economyreset(self, ctx: commands.Context) -> None:
+        embed = discord.Embed(title="Are you sure?", description="This action is completely irreversible, click on reset to continue.", color=self.bot.color)
+        view = ResetGuildEconomy(ctx, self.economy)
+        view.message = await ctx.send(embed=embed, view=view)
+
+
+    @commands.command(name='resetmember', description='Resets a member economy.', aliases=['rm'], usage='resetmember <member>')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def resetmember(self, ctx: commands.Context, members: commands.Greedy[discord.Member]) -> None:
+        message = await ctx.send(f'{self.bot.working} | Reset in progress, please be patient.')
+        members = set(members)
+
+        mentions = []
+        for member in members:
+            await self.economy.connection.execute("""DELETE FROM economy WHERE guild_id = ? AND user_id = ?""", (ctx.guild.id, member.id))
+            await self.economy.connection.execute("""DELETE FROM inventories WHERE guild_id = ? AND user_id = ?""", (ctx.guild.id, member.id))
+            mentions.append(member.mention)
+
+        await self.economy.connection.commit()
+        await message.edit(content=f'{self.bot.success} | Reset was successfull for: {",".join(mentions)}')
 
 
     @commands.hybrid_command(name="leaderboard", description="Display economy leaderboard.", aliases=["lb"], usage="leaderboard [page]")
@@ -592,7 +663,8 @@ class Economy(commands.Cog):
             max_pages += 1
         
         if page < 0 or page > max_pages or not data:
-            return await ctx.send(f"{self.bot.fail} | Page **{page}** not found.")
+            await ctx.send(f"{self.bot.fail} | Page **{page}** not found.")
+            return
         
         
         entries = []
