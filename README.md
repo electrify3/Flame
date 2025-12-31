@@ -15,6 +15,7 @@ Modules
 *   **Fun**: Fun commands such as gifs, Truth and Dare and much more.
 *   **Voice**: Commands supporting voice channel and members moderation.
 *   **Misc**: Misc commands such as userinfo, avatar, etc.
+*   **Economy**: Economy commands are available, shop and inventories are in devlopment.
 
 Refer to [Flame Wiki](https://github.com/electrify3/Flame/wiki) for all commands details.
 
